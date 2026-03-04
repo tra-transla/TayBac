@@ -18,12 +18,19 @@ export interface Post {
   updated_at: string;
 }
 
+export interface Category {
+  id: string;
+  name: string;
+  slug: string;
+  created_at: string;
+}
+
 export interface Tour {
   id: string;
   name: string;
   description: string;
   image_url: string;
   vtour_url: string;
-  category: 'History' | 'Nature' | 'Culture' | 'Religion';
+  category: string;
   created_at: string;
 }

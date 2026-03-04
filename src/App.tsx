@@ -34,6 +34,7 @@ import Dashboard from './pages/Dashboard';
 import NewsManagement from './pages/NewsManagement';
 import PostManagement from './pages/PostManagement';
 import TourManagement from './pages/TourManagement';
+import CategoryManagement from './pages/CategoryManagement';
 import { ProtectedRoute } from './components/ProtectedRoute';
 
 function LandingPage() {
@@ -43,6 +44,7 @@ function LandingPage() {
   const [news, setNews] = useState<News[]>([]);
   const [posts, setPosts] = useState<Post[]>([]);
   const [tours, setTours] = useState<any[]>([]);
+  const [categories, setCategories] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [showInfo, setShowInfo] = useState(true);
 
@@ -52,14 +54,17 @@ function LandingPage() {
     
     async function fetchData() {
       setLoading(true);
-      const [newsRes, postsRes, toursRes] = await Promise.all([
+      const [newsRes, postsRes, toursRes, categoriesRes] = await Promise.all([
         supabase.from('news').select('*').order('created_at', { ascending: false }).limit(3),
         supabase.from('posts').select('*').order('created_at', { ascending: false }).limit(4),
-        supabase.from('tours').select('*').order('created_at', { ascending: false })
+        supabase.from('tours').select('*').order('created_at', { ascending: false }),
+        supabase.from('categories').select('*').order('name', { ascending: true })
       ]);
       
       if (newsRes.data) setNews(newsRes.data);
       if (postsRes.data) setPosts(postsRes.data);
+      if (categoriesRes.data) setCategories(categoriesRes.data);
+      
       if (toursRes.data && toursRes.data.length > 0) {
         setTours(toursRes.data);
       } else {
@@ -103,18 +108,33 @@ function LandingPage() {
           </div>
           
           <div className="hidden md:flex items-center gap-8">
-            {['History', 'Nature', 'Culture', 'Religion'].map((cat) => (
-              <button 
-                key={cat}
-                onClick={() => setFilter(filter === cat ? null : cat)}
-                className={cn(
-                  "text-sm font-medium transition-colors hover:text-emerald-600",
-                  filter === cat ? "text-emerald-600" : "text-stone-600"
-                )}
-              >
-                {cat}
-              </button>
-            ))}
+            {categories.length > 0 ? (
+              categories.map((cat) => (
+                <button 
+                  key={cat.id}
+                  onClick={() => setFilter(filter === cat.name ? null : cat.name)}
+                  className={cn(
+                    "text-sm font-medium transition-colors hover:text-emerald-600",
+                    filter === cat.name ? "text-emerald-600" : "text-stone-600"
+                  )}
+                >
+                  {cat.name}
+                </button>
+              ))
+            ) : (
+              ['History', 'Nature', 'Culture', 'Religion'].map((cat) => (
+                <button 
+                  key={cat}
+                  onClick={() => setFilter(filter === cat ? null : cat)}
+                  className={cn(
+                    "text-sm font-medium transition-colors hover:text-emerald-600",
+                    filter === cat ? "text-emerald-600" : "text-stone-600"
+                  )}
+                >
+                  {cat}
+                </button>
+              ))
+            )}
           </div>
 
           <div className="flex items-center gap-4">
@@ -537,6 +557,7 @@ export default function App() {
       }>
         <Route index element={<Dashboard />} />
         <Route path="tours" element={<TourManagement />} />
+        <Route path="categories" element={<CategoryManagement />} />
         <Route path="news" element={<NewsManagement />} />
         <Route path="posts" element={<PostManagement />} />
       </Route>

@@ -13,7 +13,7 @@ import {
   Palmtree,
   Church
 } from 'lucide-react';
-import { Tour } from '../types/database';
+import { Tour, Category } from '../types/database';
 
 const CategoryIcon = ({ category }: { category: string }) => {
   switch (category) {
@@ -27,6 +27,7 @@ const CategoryIcon = ({ category }: { category: string }) => {
 
 export default function TourManagement() {
   const [tours, setTours] = useState<Tour[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingTour, setEditingTour] = useState<Tour | null>(null);
@@ -35,22 +36,28 @@ export default function TourManagement() {
     description: '',
     image_url: '',
     vtour_url: '',
-    category: 'Culture' as Tour['category']
+    category: ''
   });
   const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
-    fetchTours();
+    fetchData();
   }, []);
 
-  const fetchTours = async () => {
+  const fetchData = async () => {
     setLoading(true);
-    const { data, error } = await supabase
-      .from('tours')
-      .select('*')
-      .order('created_at', { ascending: false });
+    const [toursRes, categoriesRes] = await Promise.all([
+      supabase.from('tours').select('*').order('created_at', { ascending: false }),
+      supabase.from('categories').select('*').order('name', { ascending: true })
+    ]);
     
-    if (data) setTours(data);
+    if (toursRes.data) setTours(toursRes.data);
+    if (categoriesRes.data) {
+      setCategories(categoriesRes.data);
+      if (!formData.category && categoriesRes.data.length > 0) {
+        setFormData(prev => ({ ...prev, category: categoriesRes.data[0].name }));
+      }
+    }
     setLoading(false);
   };
 
@@ -66,7 +73,13 @@ export default function TourManagement() {
       });
     } else {
       setEditingTour(null);
-      setFormData({ name: '', description: '', image_url: '', vtour_url: '', category: 'Culture' });
+      setFormData({ 
+        name: '', 
+        description: '', 
+        image_url: '', 
+        vtour_url: '', 
+        category: categories.length > 0 ? categories[0].name : '' 
+      });
     }
     setIsModalOpen(true);
   };
@@ -80,12 +93,12 @@ export default function TourManagement() {
         .from('tours')
         .update(formData)
         .eq('id', editingTour.id);
-      if (!error) fetchTours();
+      if (!error) fetchData();
     } else {
       const { error } = await supabase
         .from('tours')
         .insert([formData]);
-      if (!error) fetchTours();
+      if (!error) fetchData();
     }
 
     setSubmitting(false);
@@ -98,7 +111,7 @@ export default function TourManagement() {
         .from('tours')
         .delete()
         .eq('id', id);
-      if (!error) fetchTours();
+      if (!error) fetchData();
     }
   };
 
@@ -202,13 +215,14 @@ export default function TourManagement() {
                   <label className="block text-sm font-bold text-stone-700 mb-2">Danh mục</label>
                   <select 
                     value={formData.category}
-                    onChange={e => setFormData({...formData, category: e.target.value as Tour['category']})}
+                    onChange={e => setFormData({...formData, category: e.target.value})}
                     className="w-full px-4 py-3 bg-stone-50 border border-stone-200 rounded-xl outline-none focus:ring-2 focus:ring-emerald-500 transition-all"
+                    required
                   >
-                    <option value="History">Lịch sử (History)</option>
-                    <option value="Nature">Thiên nhiên (Nature)</option>
-                    <option value="Culture">Văn hóa (Culture)</option>
-                    <option value="Religion">Tâm linh (Religion)</option>
+                    <option value="" disabled>Chọn danh mục</option>
+                    {categories.map(cat => (
+                      <option key={cat.id} value={cat.name}>{cat.name}</option>
+                    ))}
                   </select>
                 </div>
               </div>
