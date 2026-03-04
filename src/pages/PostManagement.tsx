@@ -9,10 +9,11 @@ import {
   Loader2,
   FileText
 } from 'lucide-react';
-import { Post } from '../types/database';
+import { Post, Category } from '../types/database';
 
 export default function PostManagement() {
   const [posts, setPosts] = useState<Post[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingPost, setEditingPost] = useState<Post | null>(null);
@@ -20,37 +21,51 @@ export default function PostManagement() {
     title: '',
     content: '',
     image_url: '',
-    external_link: ''
+    external_link: '',
+    category_id: ''
   });
   const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
-    fetchPosts();
+    fetchData();
   }, []);
 
-  const fetchPosts = async () => {
+  const fetchData = async () => {
     setLoading(true);
-    const { data, error } = await supabase
-      .from('posts')
-      .select('*')
-      .order('created_at', { ascending: false });
+    const [postsRes, categoriesRes] = await Promise.all([
+      supabase.from('posts').select('*, categories(name)').order('created_at', { ascending: false }),
+      supabase.from('categories').select('*').order('name', { ascending: true })
+    ]);
     
-    if (data) setPosts(data);
+    if (postsRes.data) setPosts(postsRes.data);
+    if (categoriesRes.data) {
+      setCategories(categoriesRes.data);
+      if (!formData.category_id && categoriesRes.data.length > 0) {
+        setFormData(prev => ({ ...prev, category_id: categoriesRes.data[0].id }));
+      }
+    }
     setLoading(false);
   };
 
-  const handleOpenModal = (item?: Post) => {
+  const handleOpenModal = (item?: any) => {
     if (item) {
       setEditingPost(item);
       setFormData({
         title: item.title,
         content: item.content,
         image_url: item.image_url,
-        external_link: item.external_link
+        external_link: item.external_link,
+        category_id: item.category_id || (categories.length > 0 ? categories[0].id : '')
       });
     } else {
       setEditingPost(null);
-      setFormData({ title: '', content: '', image_url: '', external_link: '' });
+      setFormData({ 
+        title: '', 
+        content: '', 
+        image_url: '', 
+        external_link: '',
+        category_id: categories.length > 0 ? categories[0].id : ''
+      });
     }
     setIsModalOpen(true);
   };
@@ -64,12 +79,12 @@ export default function PostManagement() {
         .from('posts')
         .update(formData)
         .eq('id', editingPost.id);
-      if (!error) fetchPosts();
+      if (!error) fetchData();
     } else {
       const { error } = await supabase
         .from('posts')
         .insert([formData]);
-      if (!error) fetchPosts();
+      if (!error) fetchData();
     }
 
     setSubmitting(false);
@@ -82,7 +97,7 @@ export default function PostManagement() {
         .from('posts')
         .delete()
         .eq('id', id);
-      if (!error) fetchPosts();
+      if (!error) fetchData();
     }
   };
 
@@ -134,6 +149,11 @@ export default function PostManagement() {
                 </div>
               </div>
               <div className="p-6">
+                <div className="flex items-center gap-2 mb-2">
+                  <span className="px-2 py-0.5 bg-emerald-50 text-emerald-600 text-[10px] font-bold rounded-md uppercase tracking-wider">
+                    {item.categories?.name || 'Chưa phân loại'}
+                  </span>
+                </div>
                 <h3 className="font-bold text-xl text-stone-900 mb-2">{item.title}</h3>
                 <p className="text-stone-500 text-sm line-clamp-3 mb-4">{item.content}</p>
                 <div className="flex items-center justify-between pt-4 border-t border-stone-50">
@@ -196,6 +216,20 @@ export default function PostManagement() {
               </div>
               <div className="grid grid-cols-2 gap-6">
                 <div>
+                  <label className="block text-sm font-bold text-stone-700 mb-2">Danh mục</label>
+                  <select 
+                    value={formData.category_id}
+                    onChange={e => setFormData({...formData, category_id: e.target.value})}
+                    className="w-full px-4 py-3 bg-stone-50 border border-stone-200 rounded-xl outline-none focus:ring-2 focus:ring-emerald-500 transition-all"
+                    required
+                  >
+                    <option value="" disabled>Chọn danh mục</option>
+                    {categories.map(cat => (
+                      <option key={cat.id} value={cat.id}>{cat.name}</option>
+                    ))}
+                  </select>
+                </div>
+                <div>
                   <label className="block text-sm font-bold text-stone-700 mb-2">URL Hình ảnh</label>
                   <input 
                     type="url" 
@@ -205,16 +239,16 @@ export default function PostManagement() {
                     placeholder="https://..."
                   />
                 </div>
-                <div>
-                  <label className="block text-sm font-bold text-stone-700 mb-2">Link liên kết ngoài</label>
-                  <input 
-                    type="url" 
-                    value={formData.external_link}
-                    onChange={e => setFormData({...formData, external_link: e.target.value})}
-                    className="w-full px-4 py-3 bg-stone-50 border border-stone-200 rounded-xl outline-none focus:ring-2 focus:ring-emerald-500 transition-all"
-                    placeholder="https://..."
-                  />
-                </div>
+              </div>
+              <div>
+                <label className="block text-sm font-bold text-stone-700 mb-2">Link liên kết ngoài</label>
+                <input 
+                  type="url" 
+                  value={formData.external_link}
+                  onChange={e => setFormData({...formData, external_link: e.target.value})}
+                  className="w-full px-4 py-3 bg-stone-50 border border-stone-200 rounded-xl outline-none focus:ring-2 focus:ring-emerald-500 transition-all"
+                  placeholder="https://..."
+                />
               </div>
               <div className="pt-6 flex justify-end gap-4">
                 <button 

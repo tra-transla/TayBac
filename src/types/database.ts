@@ -14,8 +14,10 @@ export interface Post {
   content: string;
   image_url: string;
   external_link: string;
+  category_id: string;
   created_at: string;
   updated_at: string;
+  categories?: { name: string };
 }
 
 export interface Category {
@@ -31,6 +33,7 @@ export interface Tour {
   description: string;
   image_url: string;
   vtour_url: string;
-  category: string;
+  category_id: string;
   created_at: string;
+  categories?: { name: string };
 }

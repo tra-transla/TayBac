@@ -36,7 +36,7 @@ export default function TourManagement() {
     description: '',
     image_url: '',
     vtour_url: '',
-    category: ''
+    category_id: ''
   });
   const [submitting, setSubmitting] = useState(false);
 
@@ -47,15 +47,15 @@ export default function TourManagement() {
   const fetchData = async () => {
     setLoading(true);
     const [toursRes, categoriesRes] = await Promise.all([
-      supabase.from('tours').select('*').order('created_at', { ascending: false }),
+      supabase.from('tours').select('*, categories(name)').order('created_at', { ascending: false }),
       supabase.from('categories').select('*').order('name', { ascending: true })
     ]);
     
     if (toursRes.data) setTours(toursRes.data);
     if (categoriesRes.data) {
       setCategories(categoriesRes.data);
-      if (!formData.category && categoriesRes.data.length > 0) {
-        setFormData(prev => ({ ...prev, category: categoriesRes.data[0].name }));
+      if (!formData.category_id && categoriesRes.data.length > 0) {
+        setFormData(prev => ({ ...prev, category_id: categoriesRes.data[0].id }));
       }
     }
     setLoading(false);
@@ -69,7 +69,7 @@ export default function TourManagement() {
         description: item.description,
         image_url: item.image_url,
         vtour_url: item.vtour_url,
-        category: item.category
+        category_id: item.category_id
       });
     } else {
       setEditingTour(null);
@@ -78,7 +78,7 @@ export default function TourManagement() {
         description: '', 
         image_url: '', 
         vtour_url: '', 
-        category: categories.length > 0 ? categories[0].name : '' 
+        category_id: categories.length > 0 ? categories[0].id : '' 
       });
     }
     setIsModalOpen(true);
@@ -149,8 +149,8 @@ export default function TourManagement() {
                 )}
                 <div className="absolute top-4 left-4">
                   <span className="px-3 py-1 rounded-full bg-white/90 backdrop-blur-sm text-[10px] font-bold uppercase tracking-wider text-stone-800 shadow-sm flex items-center gap-1.5">
-                    <CategoryIcon category={item.category} />
-                    {item.category}
+                    <CategoryIcon category={item.categories?.name || 'Other'} />
+                    {item.categories?.name || 'Chưa phân loại'}
                   </span>
                 </div>
                 <div className="absolute top-4 right-4 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
@@ -214,14 +214,14 @@ export default function TourManagement() {
                 <div className="col-span-2 md:col-span-1">
                   <label className="block text-sm font-bold text-stone-700 mb-2">Danh mục</label>
                   <select 
-                    value={formData.category}
-                    onChange={e => setFormData({...formData, category: e.target.value})}
+                    value={formData.category_id}
+                    onChange={e => setFormData({...formData, category_id: e.target.value})}
                     className="w-full px-4 py-3 bg-stone-50 border border-stone-200 rounded-xl outline-none focus:ring-2 focus:ring-emerald-500 transition-all"
                     required
                   >
                     <option value="" disabled>Chọn danh mục</option>
                     {categories.map(cat => (
-                      <option key={cat.id} value={cat.name}>{cat.name}</option>
+                      <option key={cat.id} value={cat.id}>{cat.name}</option>
                     ))}
                   </select>
                 </div>

@@ -56,8 +56,8 @@ function LandingPage() {
       setLoading(true);
       const [newsRes, postsRes, toursRes, categoriesRes] = await Promise.all([
         supabase.from('news').select('*').order('created_at', { ascending: false }).limit(3),
-        supabase.from('posts').select('*').order('created_at', { ascending: false }).limit(4),
-        supabase.from('tours').select('*').order('created_at', { ascending: false }),
+        supabase.from('posts').select('*, categories(name)').order('created_at', { ascending: false }).limit(4),
+        supabase.from('tours').select('*, categories(name)').order('created_at', { ascending: false }),
         supabase.from('categories').select('*').order('name', { ascending: true })
       ]);
       
@@ -86,7 +86,7 @@ function LandingPage() {
   }, []);
 
   const filteredTours = filter 
-    ? tours.filter(t => t.category === filter)
+    ? tours.filter(t => (t.categories?.name || t.category) === filter)
     : tours;
 
   return (
@@ -253,8 +253,8 @@ function LandingPage() {
                 </div>
                 <div className="absolute top-4 left-4">
                   <span className="px-3 py-1 rounded-full bg-white/90 backdrop-blur-sm text-[10px] font-bold uppercase tracking-wider text-stone-800 shadow-sm flex items-center gap-1.5">
-                    <CategoryIcon category={tour.category} />
-                    {tour.category}
+                    <CategoryIcon category={tour.categories?.name || tour.category} />
+                    {tour.categories?.name || tour.category}
                   </span>
                 </div>
               </div>
@@ -354,6 +354,15 @@ function LandingPage() {
                     />
                   </div>
                   <div className="md:w-3/5 p-8 flex flex-col justify-center">
+                    <div className="flex items-center gap-2 mb-3">
+                      <span className="px-2 py-0.5 bg-emerald-50 text-emerald-600 text-[10px] font-bold rounded-md uppercase tracking-wider">
+                        {post.categories?.name || 'Khám phá'}
+                      </span>
+                      <div className="w-1 h-1 bg-stone-300 rounded-full" />
+                      <span className="text-[10px] text-stone-400 font-bold uppercase tracking-widest">
+                        {new Date(post.created_at).toLocaleDateString('vi-VN')}
+                      </span>
+                    </div>
                     <h4 className="text-xl font-bold mb-4 group-hover:text-emerald-600 transition-colors">
                       {post.title}
                     </h4>
