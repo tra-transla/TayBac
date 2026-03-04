@@ -74,12 +74,23 @@ export default function SongManagement() {
     setIsModalOpen(true);
   };
 
+  const normalizeYoutubeUrl = (url: string) => {
+    if (!url) return '';
+    if (url.includes('youtube.com') || url.includes('youtu.be')) return url;
+    return `https://www.youtube.com/watch?v=${url}`;
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setSubmitting(true);
 
-    const thumbnail = formData.thumbnail_url || getYoutubeThumbnail(formData.youtube_url);
-    const dataToSave = { ...formData, thumbnail_url: thumbnail };
+    const normalizedUrl = normalizeYoutubeUrl(formData.youtube_url);
+    const thumbnail = formData.thumbnail_url || getYoutubeThumbnail(normalizedUrl);
+    const dataToSave = { 
+      ...formData, 
+      youtube_url: normalizedUrl,
+      thumbnail_url: thumbnail 
+    };
 
     if (editingSong) {
       const { error } = await supabase

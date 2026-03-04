@@ -60,6 +60,13 @@ function LandingPage() {
 
   const Player = ReactPlayer as any;
 
+  const getYoutubeUrl = (url: string) => {
+    if (!url) return '';
+    if (url.includes('youtube.com') || url.includes('youtu.be')) return url;
+    // If it's just an ID, convert to full URL
+    return `https://www.youtube.com/watch?v=${url}`;
+  };
+
   useEffect(() => {
     const handleScroll = () => setIsScrolled(window.scrollY > 50);
     window.addEventListener('scroll', handleScroll);
@@ -394,8 +401,7 @@ function LandingPage() {
               {/* Video Player (Right) */}
               <div className="lg:w-2/3 aspect-video bg-stone-100 relative group">
                 <Player
-                  key={songs[currentSongIndex]?.id || currentSongIndex}
-                  url={songs[currentSongIndex].youtube_url}
+                  url={getYoutubeUrl(songs[currentSongIndex].youtube_url)}
                   width="100%"
                   height="100%"
                   playing={isPlaying}
@@ -406,10 +412,15 @@ function LandingPage() {
                     setIsPlaying(true);
                   }}
                   onPlay={() => setIsPlaying(true)}
-                  // Removed onPause to prevent race conditions during song transitions
+                  onPause={() => setIsPlaying(false)}
                   onError={(e: any) => {
                     console.error("Player Error:", e);
                     setIsPlaying(false);
+                  }}
+                  config={{
+                    youtube: {
+                      playerVars: { autoplay: 1, rel: 0 }
+                    }
                   }}
                 />
                 
