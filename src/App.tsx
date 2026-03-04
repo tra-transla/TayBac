@@ -358,9 +358,8 @@ function LandingPage() {
           <div className="max-w-7xl mx-auto px-6">
             <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-10">
               <div>
-                <span className="text-emerald-600 text-[10px] font-bold uppercase tracking-[0.2em] mb-2 block">Âm vang núi rừng</span>
-                <h2 className="text-3xl md:text-4xl font-serif font-bold">Video nhạc về Tây Bắc</h2>
-              </div>
+                <span className="text-emerald-600 text-[20px] font-bold uppercase tracking-[0.2em] mb-2 block">Âm vang núi rừng</span>
+               </div>
               <p className="text-stone-500 text-sm max-w-md leading-relaxed">
                 Lắng nghe những giai điệu đậm chất đại ngàn, hòa mình vào không gian văn hóa đặc sắc của các dân tộc vùng cao.
               </p>
