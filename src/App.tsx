@@ -188,15 +188,7 @@ function LandingPage() {
                 Bắt đầu khám phá
                 <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
               </button>
-              <a 
-                href="https://sonlacity.vietnaminfo.net/vi/vtours"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="px-8 py-4 bg-white/10 hover:bg-white/20 text-white border border-white/30 rounded-2xl font-semibold transition-all backdrop-blur-md flex items-center gap-2"
-              >
-                Trang chủ chính thức
-                <ExternalLink className="w-4 h-4" />
-              </a>
+             
             </div>
           </motion.div>
         </div>
