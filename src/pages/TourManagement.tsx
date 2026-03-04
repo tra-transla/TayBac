@@ -16,13 +16,12 @@ import {
 import { Tour, Category } from '../types/database';
 
 const CategoryIcon = ({ category }: { category: string }) => {
-  switch (category) {
-    case 'History': return <History className="w-4 h-4" />;
-    case 'Nature': return <Trees className="w-4 h-4" />;
-    case 'Culture': return <Palmtree className="w-4 h-4" />;
-    case 'Religion': return <Church className="w-4 h-4" />;
-    default: return <MapPin className="w-4 h-4" />;
-  }
+  const normalized = category?.toLowerCase() || '';
+  if (normalized.includes('lịch sử') || normalized.includes('history')) return <History className="w-4 h-4" />;
+  if (normalized.includes('thiên nhiên') || normalized.includes('nature')) return <Trees className="w-4 h-4" />;
+  if (normalized.includes('văn hóa') || normalized.includes('culture')) return <Palmtree className="w-4 h-4" />;
+  if (normalized.includes('tôn giáo') || normalized.includes('religion')) return <Church className="w-4 h-4" />;
+  return <MapPin className="w-4 h-4" />;
 };
 
 export default function TourManagement() {

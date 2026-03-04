@@ -122,7 +122,7 @@ function LandingPage() {
                 </button>
               ))
             ) : (
-              ['History', 'Nature', 'Culture', 'Religion'].map((cat) => (
+              ['Lịch sử', 'Thiên nhiên', 'Văn hóa', 'Tôn giáo'].map((cat) => (
                 <button 
                   key={cat}
                   onClick={() => setFilter(filter === cat ? null : cat)}
@@ -211,19 +211,35 @@ function LandingPage() {
             >
               Tất cả
             </button>
-            {['History', 'Nature', 'Culture', 'Religion'].map((cat) => (
-              <button 
-                key={cat}
-                onClick={() => setFilter(cat)}
-                className={cn(
-                  "px-4 py-2 rounded-xl text-sm font-medium transition-all whitespace-nowrap flex items-center gap-2",
-                  filter === cat ? "bg-emerald-600 text-white" : "bg-white text-stone-600 border border-stone-200 hover:border-stone-300"
-                )}
-              >
-                <CategoryIcon category={cat} />
-                {cat}
-              </button>
-            ))}
+            {categories.length > 0 ? (
+              categories.map((cat) => (
+                <button 
+                  key={cat.id}
+                  onClick={() => setFilter(filter === cat.name ? null : cat.name)}
+                  className={cn(
+                    "px-4 py-2 rounded-xl text-sm font-medium transition-all whitespace-nowrap flex items-center gap-2",
+                    filter === cat.name ? "bg-emerald-600 text-white" : "bg-white text-stone-600 border border-stone-200 hover:border-stone-300"
+                  )}
+                >
+                  <CategoryIcon category={cat.name} />
+                  {cat.name}
+                </button>
+              ))
+            ) : (
+              ['Lịch sử', 'Thiên nhiên', 'Văn hóa', 'Tôn giáo'].map((cat) => (
+                <button 
+                  key={cat}
+                  onClick={() => setFilter(filter === cat ? null : cat)}
+                  className={cn(
+                    "px-4 py-2 rounded-xl text-sm font-medium transition-all whitespace-nowrap flex items-center gap-2",
+                    filter === cat ? "bg-emerald-600 text-white" : "bg-white text-stone-600 border border-stone-200 hover:border-stone-300"
+                  )}
+                >
+                  <CategoryIcon category={cat} />
+                  {cat}
+                </button>
+              ))
+            )}
           </div>
         </div>
 
@@ -535,13 +551,12 @@ function LandingPage() {
 }
 
 const CategoryIcon = ({ category }: { category: string }) => {
-  switch (category) {
-    case 'History': return <History className="w-4 h-4" />;
-    case 'Nature': return <Trees className="w-4 h-4" />;
-    case 'Culture': return <Palmtree className="w-4 h-4" />;
-    case 'Religion': return <Church className="w-4 h-4" />;
-    default: return <MapPin className="w-4 h-4" />;
-  }
+  const normalized = category?.toLowerCase() || '';
+  if (normalized.includes('lịch sử') || normalized.includes('history')) return <History className="w-4 h-4" />;
+  if (normalized.includes('thiên nhiên') || normalized.includes('nature')) return <Trees className="w-4 h-4" />;
+  if (normalized.includes('văn hóa') || normalized.includes('culture')) return <Palmtree className="w-4 h-4" />;
+  if (normalized.includes('tôn giáo') || normalized.includes('religion')) return <Church className="w-4 h-4" />;
+  return <MapPin className="w-4 h-4" />;
 };
 
 export default function App() {
