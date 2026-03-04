@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Routes, Route, Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'motion/react';
+import ReactPlayer from 'react-player';
 import { 
   MapPin, 
   Info, 
@@ -21,7 +22,8 @@ import {
   ArrowRight,
   Eye,
   EyeOff,
-  Youtube
+  Youtube,
+  Music
 } from 'lucide-react';
 import { TOUR_LOCATIONS, TourLocation } from './data/tours';
 import { cn } from './lib/utils';
@@ -51,8 +53,12 @@ function LandingPage() {
   const [slides, setSlides] = useState<any[]>([]);
   const [songs, setSongs] = useState<any[]>([]);
   const [currentSlide, setCurrentSlide] = useState(0);
+  const [currentSongIndex, setCurrentSongIndex] = useState(0);
+  const [isPlaying, setIsPlaying] = useState(false);
   const [loading, setLoading] = useState(true);
   const [showInfo, setShowInfo] = useState(true);
+
+  const Player = ReactPlayer as any;
 
   useEffect(() => {
     const handleScroll = () => setIsScrolled(window.scrollY > 50);
@@ -341,44 +347,87 @@ function LandingPage() {
 
       {/* Music Videos Section */}
       {songs.length > 0 && (
-        <section className="py-24 bg-stone-900 text-white overflow-hidden">
+        <section className="py-24 bg-white text-stone-900 overflow-hidden">
           <div className="max-w-7xl mx-auto px-6">
-            <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12">
+            <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-10">
               <div>
-                <span className="text-emerald-400 text-xs font-bold uppercase tracking-widest mb-3 block">Âm vang núi rừng</span>
-                <h2 className="text-4xl md:text-5xl font-serif font-bold">Video nhạc về Tây Bắc</h2>
+                <span className="text-emerald-600 text-[10px] font-bold uppercase tracking-[0.2em] mb-2 block">Âm vang núi rừng</span>
+                <h2 className="text-3xl md:text-4xl font-serif font-bold">Video nhạc về Tây Bắc</h2>
               </div>
-              <p className="text-stone-400 max-w-md">
+              <p className="text-stone-500 text-sm max-w-md leading-relaxed">
                 Lắng nghe những giai điệu đậm chất đại ngàn, hòa mình vào không gian văn hóa đặc sắc của các dân tộc vùng cao.
               </p>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {songs.map((song) => (
-                <motion.div 
-                  key={song.id}
-                  whileHover={{ y: -10 }}
-                  className="group"
-                >
-                  <a href={song.youtube_url} target="_blank" rel="noopener noreferrer" className="block">
-                    <div className="relative aspect-video rounded-3xl overflow-hidden mb-6 shadow-2xl shadow-black/50">
-                      <img 
-                        src={song.thumbnail_url} 
-                        alt={song.title}
-                        className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
-                        referrerPolicy="no-referrer"
-                      />
-                      <div className="absolute inset-0 bg-black/20 group-hover:bg-black/40 transition-colors flex items-center justify-center">
-                        <div className="w-16 h-16 bg-white/20 backdrop-blur-md rounded-full flex items-center justify-center border border-white/30 group-hover:scale-110 group-hover:bg-emerald-600 group-hover:border-emerald-500 transition-all duration-500">
-                          <Youtube className="w-8 h-8 text-white fill-white" />
-                        </div>
-                      </div>
+            <div className="flex flex-col lg:flex-row bg-white border border-stone-200 overflow-hidden rounded-2xl shadow-sm">
+              {/* Song List (Left) - Table-like structure */}
+              <div className="lg:w-1/3 flex flex-col border-r border-stone-200 max-h-[450px] overflow-y-auto custom-scrollbar bg-white">
+                <div className="p-3 border-b border-stone-200 bg-stone-50 text-[9px] font-bold uppercase tracking-[0.15em] text-stone-400">
+                  Danh sách bài hát
+                </div>
+                {songs.map((song, index) => (
+                  <button
+                    key={song.id}
+                    onClick={() => {
+                      setCurrentSongIndex(index);
+                      setIsPlaying(true);
+                    }}
+                    className={cn(
+                      "flex items-center gap-3 p-3 transition-all text-left border-b border-stone-50",
+                      currentSongIndex === index 
+                        ? "bg-emerald-50/50 text-emerald-700" 
+                        : "hover:bg-stone-50 text-stone-600"
+                    )}
+                  >
+                    <div className="w-5 text-[9px] font-mono text-stone-300">{(index + 1).toString().padStart(2, '0')}</div>
+                    <div className="flex-1 min-w-0">
+                      <h4 className="text-[13px] font-medium truncate leading-tight mb-0.5">{song.title}</h4>
+                      <p className="text-stone-400 text-[10px] truncate uppercase tracking-wide">{song.artist}</p>
                     </div>
-                    <h3 className="text-xl font-bold mb-1 group-hover:text-emerald-400 transition-colors">{song.title}</h3>
-                    <p className="text-stone-400 text-sm">{song.artist}</p>
-                  </a>
-                </motion.div>
-              ))}
+                    {currentSongIndex === index && isPlaying && (
+                      <Music className="w-3 h-3 text-emerald-500 animate-pulse" />
+                    )}
+                  </button>
+                ))}
+              </div>
+
+              {/* Video Player (Right) */}
+              <div className="lg:w-2/3 aspect-video bg-stone-100 relative group">
+                <Player
+                  key={songs[currentSongIndex]?.id || currentSongIndex}
+                  url={songs[currentSongIndex].youtube_url}
+                  width="100%"
+                  height="100%"
+                  playing={isPlaying}
+                  controls={true}
+                  onEnded={() => {
+                    const nextIndex = (currentSongIndex + 1) % songs.length;
+                    setCurrentSongIndex(nextIndex);
+                    setIsPlaying(true);
+                  }}
+                  onPlay={() => setIsPlaying(true)}
+                  // Removed onPause to prevent race conditions during song transitions
+                  onError={(e: any) => {
+                    console.error("Player Error:", e);
+                    setIsPlaying(false);
+                  }}
+                />
+                
+                {!isPlaying && (
+                  <div 
+                    className="absolute inset-0 flex items-center justify-center bg-white/60 backdrop-blur-[2px] cursor-pointer group"
+                    onClick={() => setIsPlaying(true)}
+                  >
+                    <div className="w-14 h-14 bg-emerald-600 rounded-full flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
+                      <Youtube className="w-7 h-7 text-white fill-white" />
+                    </div>
+                    <div className="absolute bottom-5 left-6 text-left">
+                      <p className="text-emerald-600 text-[9px] font-bold uppercase tracking-widest mb-1">Sẵn sàng phát</p>
+                      <h3 className="text-lg font-serif font-bold text-stone-900">{songs[currentSongIndex].title}</h3>
+                    </div>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         </section>
