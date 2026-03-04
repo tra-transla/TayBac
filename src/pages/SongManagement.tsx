@@ -76,8 +76,21 @@ export default function SongManagement() {
 
   const normalizeYoutubeUrl = (url: string) => {
     if (!url) return '';
-    if (url.includes('youtube.com') || url.includes('youtu.be')) return url;
-    return `https://www.youtube.com/watch?v=${url}`;
+    
+    // Extract ID using a robust regex
+    const match = url.match(/(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/(?:[^\/\n\s]+\/\S+\/|(?:v|e(?:mbed)?)\/|\S*?[?&]v=)|youtu\.be\/)([a-zA-Z0-9_-]{11})/);
+    const videoId = match ? match[1] : null;
+    
+    if (videoId) {
+      return `https://www.youtube.com/watch?v=${videoId}`;
+    }
+    
+    // If it's just an 11-char string that looks like an ID
+    if (url.length === 11 && !url.includes('/') && !url.includes('.')) {
+      return `https://www.youtube.com/watch?v=${url}`;
+    }
+    
+    return url;
   };
 
   const handleSubmit = async (e: React.FormEvent) => {

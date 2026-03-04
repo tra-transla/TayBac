@@ -62,9 +62,21 @@ function LandingPage() {
 
   const getYoutubeUrl = (url: string) => {
     if (!url) return '';
-    if (url.includes('youtube.com') || url.includes('youtu.be')) return url;
-    // If it's just an ID, convert to full URL
-    return `https://www.youtube.com/watch?v=${url}`;
+    
+    // Extract ID using a robust regex
+    const match = url.match(/(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/(?:[^\/\n\s]+\/\S+\/|(?:v|e(?:mbed)?)\/|\S*?[?&]v=)|youtu\.be\/)([a-zA-Z0-9_-]{11})/);
+    const videoId = match ? match[1] : null;
+    
+    if (videoId) {
+      return `https://www.youtube.com/watch?v=${videoId}`;
+    }
+    
+    // If it's just an 11-char string that looks like an ID
+    if (url.length === 11 && !url.includes('/') && !url.includes('.')) {
+      return `https://www.youtube.com/watch?v=${url}`;
+    }
+    
+    return url;
   };
 
   useEffect(() => {
@@ -358,8 +370,9 @@ function LandingPage() {
           <div className="max-w-7xl mx-auto px-6">
             <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-10">
               <div>
-                <span className="text-emerald-600 text-[20px] font-bold uppercase tracking-[0.2em] mb-2 block">Âm vang núi rừng</span>
-               </div>
+                <span className="text-emerald-600 text-xs font-bold uppercase tracking-[0.2em] mb-2 block">Âm vang núi rừng</span>
+                <h4 className="text-2xl md:text-3xl font-serif font-bold">Video nhạc về Tây Bắc</h4>
+              </div>
               <p className="text-stone-500 text-sm max-w-md leading-relaxed">
                 Lắng nghe những giai điệu đậm chất đại ngàn, hòa mình vào không gian văn hóa đặc sắc của các dân tộc vùng cao.
               </p>
@@ -418,7 +431,14 @@ function LandingPage() {
                   }}
                   config={{
                     youtube: {
-                      playerVars: { autoplay: 1, rel: 0 }
+                      playerVars: { 
+                        autoplay: 1, 
+                        rel: 0, 
+                        modestbranding: 1,
+                        origin: window.location.origin,
+                        enablejsapi: 1,
+                        playsinline: 1
+                      }
                     }
                   }}
                 />
