@@ -79,16 +79,25 @@ export default function PostManagement() {
         .from('posts')
         .update(formData)
         .eq('id', editingPost.id);
-      if (!error) fetchData();
+      if (error) {
+        alert('Lỗi khi cập nhật bài viết: ' + error.message);
+      } else {
+        fetchData();
+        setIsModalOpen(false);
+      }
     } else {
       const { error } = await supabase
         .from('posts')
         .insert([formData]);
-      if (!error) fetchData();
+      if (error) {
+        alert('Lỗi khi thêm bài viết: ' + error.message);
+      } else {
+        fetchData();
+        setIsModalOpen(false);
+      }
     }
 
     setSubmitting(false);
-    setIsModalOpen(false);
   };
 
   const handleDelete = async (id: string) => {

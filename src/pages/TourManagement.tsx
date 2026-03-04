@@ -93,16 +93,25 @@ export default function TourManagement() {
         .from('tours')
         .update(formData)
         .eq('id', editingTour.id);
-      if (!error) fetchData();
+      if (error) {
+        alert('Lỗi khi cập nhật điểm đến: ' + error.message);
+      } else {
+        fetchData();
+        setIsModalOpen(false);
+      }
     } else {
       const { error } = await supabase
         .from('tours')
         .insert([formData]);
-      if (!error) fetchData();
+      if (error) {
+        alert('Lỗi khi thêm điểm đến: ' + error.message);
+      } else {
+        fetchData();
+        setIsModalOpen(false);
+      }
     }
 
     setSubmitting(false);
-    setIsModalOpen(false);
   };
 
   const handleDelete = async (id: string) => {
