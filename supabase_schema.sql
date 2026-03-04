@@ -97,3 +97,23 @@ insert into categories (name, slug) values
 ('Văn hóa', 'van-hoa'),
 ('Tôn giáo', 'ton-giao')
 on conflict (name) do nothing;
+
+-- 6. Create Slides Table
+create table if not exists slides (
+  id uuid default gen_random_uuid() primary key,
+  title text,
+  subtitle text,
+  image_url text not null,
+  order_index integer default 0,
+  is_active boolean default true,
+  created_at timestamp with time zone default timezone('utc'::text, now()) not null
+);
+
+-- Enable RLS for slides
+alter table slides enable row level security;
+
+-- Policies for slides
+drop policy if exists "Slides are viewable by everyone" on slides;
+create policy "Slides are viewable by everyone" on slides for select using (true);
+drop policy if exists "Slides are manageable by authenticated users" on slides;
+create policy "Slides are manageable by authenticated users" on slides for all using (auth.role() = 'authenticated');

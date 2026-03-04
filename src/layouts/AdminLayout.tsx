@@ -12,7 +12,8 @@ import {
   ChevronRight,
   Navigation,
   MapPin,
-  Tags
+  Tags,
+  Image as ImageIcon
 } from 'lucide-react';
 import { cn } from '../lib/utils';
 
@@ -28,6 +29,7 @@ export default function AdminLayout() {
 
   const menuItems = [
     { icon: LayoutDashboard, label: 'Dashboard', path: '/admin' },
+    { icon: ImageIcon, label: 'Slide nền', path: '/admin/slides' },
     { icon: MapPin, label: 'Điểm đến', path: '/admin/tours' },
     { icon: Tags, label: 'Danh mục', path: '/admin/categories' },
     { icon: Newspaper, label: 'Tin tức', path: '/admin/news' },

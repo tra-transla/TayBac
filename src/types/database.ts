@@ -37,3 +37,13 @@ export interface Tour {
   created_at: string;
   categories?: { name: string };
 }
+
+export interface Slide {
+  id: string;
+  title: string;
+  subtitle: string;
+  image_url: string;
+  order_index: number;
+  is_active: boolean;
+  created_at: string;
+}

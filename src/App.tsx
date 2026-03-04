@@ -35,6 +35,7 @@ import NewsManagement from './pages/NewsManagement';
 import PostManagement from './pages/PostManagement';
 import TourManagement from './pages/TourManagement';
 import CategoryManagement from './pages/CategoryManagement';
+import SlideManagement from './pages/SlideManagement';
 import { ProtectedRoute } from './components/ProtectedRoute';
 
 function LandingPage() {
@@ -45,6 +46,8 @@ function LandingPage() {
   const [posts, setPosts] = useState<Post[]>([]);
   const [tours, setTours] = useState<any[]>([]);
   const [categories, setCategories] = useState<any[]>([]);
+  const [slides, setSlides] = useState<any[]>([]);
+  const [currentSlide, setCurrentSlide] = useState(0);
   const [loading, setLoading] = useState(true);
   const [showInfo, setShowInfo] = useState(true);
 
@@ -54,16 +57,18 @@ function LandingPage() {
     
     async function fetchData() {
       setLoading(true);
-      const [newsRes, postsRes, toursRes, categoriesRes] = await Promise.all([
+      const [newsRes, postsRes, toursRes, categoriesRes, slidesRes] = await Promise.all([
         supabase.from('news').select('*').order('created_at', { ascending: false }).limit(3),
         supabase.from('posts').select('*, categories(name)').order('created_at', { ascending: false }).limit(4),
         supabase.from('tours').select('*, categories(name)').order('created_at', { ascending: false }),
-        supabase.from('categories').select('*').order('name', { ascending: true })
+        supabase.from('categories').select('*').order('name', { ascending: true }),
+        supabase.from('slides').select('*').eq('is_active', true).order('order_index', { ascending: true })
       ]);
       
       if (newsRes.data) setNews(newsRes.data);
       if (postsRes.data) setPosts(postsRes.data);
       if (categoriesRes.data) setCategories(categoriesRes.data);
+      if (slidesRes.data) setSlides(slidesRes.data);
       
       if (toursRes.data && toursRes.data.length > 0) {
         setTours(toursRes.data);
@@ -84,6 +89,15 @@ function LandingPage() {
     fetchData();
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
+
+  useEffect(() => {
+    if (slides.length > 1) {
+      const timer = setInterval(() => {
+        setCurrentSlide((prev) => (prev + 1) % slides.length);
+      }, 6000);
+      return () => clearInterval(timer);
+    }
+  }, [slides]);
 
   const filteredTours = filter 
     ? tours.filter(t => (t.categories?.name || t.category) === filter)
@@ -155,17 +169,38 @@ function LandingPage() {
       {/* Hero Section */}
       <section className="relative h-[80vh] flex items-center justify-center overflow-hidden">
         <div className="absolute inset-0 z-0">
-          <img 
-            src="https://picsum.photos/seed/sonla-hero/1920/1080" 
-            alt="Tây Bắc Landscape" 
-            className="w-full h-full object-cover brightness-50"
-            referrerPolicy="no-referrer"
-          />
+          <AnimatePresence mode="wait">
+            {slides.length > 0 ? (
+              <motion.div
+                key={slides[currentSlide].id}
+                initial={{ opacity: 0, scale: 1.1 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.95 }}
+                transition={{ duration: 1.5, ease: "easeInOut" }}
+                className="absolute inset-0"
+              >
+                <img 
+                  src={slides[currentSlide].image_url} 
+                  alt={slides[currentSlide].title || "Tây Bắc Landscape"} 
+                  className="w-full h-full object-cover brightness-50"
+                  referrerPolicy="no-referrer"
+                />
+              </motion.div>
+            ) : (
+              <img 
+                src="https://picsum.photos/seed/sonla-hero/1920/1080" 
+                alt="Tây Bắc Landscape" 
+                className="w-full h-full object-cover brightness-50"
+                referrerPolicy="no-referrer"
+              />
+            )}
+          </AnimatePresence>
           <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-transparent to-stone-50" />
         </div>
 
         <div className="relative z-10 max-w-4xl px-6 text-center">
           <motion.div
+            key={slides.length > 0 ? slides[currentSlide].id : 'default'}
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8 }}
@@ -174,11 +209,14 @@ function LandingPage() {
               Khám phá vùng đất Tây Bắc
             </span>
             <h2 className="text-5xl md:text-7xl font-serif text-white mb-6 leading-tight">
-              Hành trình Di sản <br />
-              <span className="italic">Tây Bắc - Việt Nam</span>
+              {slides.length > 0 && slides[currentSlide].title ? (
+                <span dangerouslySetInnerHTML={{ __html: slides[currentSlide].title.replace(/\n/g, '<br />') }} />
+              ) : (
+                <>Hành trình Di sản <br /><span className="italic">Tây Bắc - Việt Nam</span></>
+              )}
             </h2>
             <p className="text-lg text-stone-200 mb-10 max-w-2xl mx-auto leading-relaxed">
-              Trải nghiệm vẻ đẹp hùng vĩ của núi rừng, chiều sâu lịch sử và bản sắc văn hóa độc đáo qua công nghệ tham quan ảo 360 độ.
+              {slides.length > 0 && slides[currentSlide].subtitle ? slides[currentSlide].subtitle : "Trải nghiệm vẻ đẹp hùng vĩ của núi rừng, chiều sâu lịch sử và bản sắc văn hóa độc đáo qua công nghệ tham quan ảo 360 độ."}
             </p>
             <div className="flex flex-wrap justify-center gap-4">
               <button 
@@ -188,10 +226,25 @@ function LandingPage() {
                 Bắt đầu khám phá
                 <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
               </button>
-             
             </div>
           </motion.div>
         </div>
+
+        {/* Slide Indicators */}
+        {slides.length > 1 && (
+          <div className="absolute bottom-12 left-1/2 -translate-x-1/2 z-20 flex gap-3">
+            {slides.map((_, idx) => (
+              <button
+                key={idx}
+                onClick={() => setCurrentSlide(idx)}
+                className={cn(
+                  "w-12 h-1 rounded-full transition-all duration-500",
+                  currentSlide === idx ? "bg-emerald-500" : "bg-white/30 hover:bg-white/50"
+                )}
+              />
+            ))}
+          </div>
+        )}
       </section>
 
       {/* Tours Grid */}
@@ -574,6 +627,7 @@ export default function App() {
         <Route index element={<Dashboard />} />
         <Route path="tours" element={<TourManagement />} />
         <Route path="categories" element={<CategoryManagement />} />
+        <Route path="slides" element={<SlideManagement />} />
         <Route path="news" element={<NewsManagement />} />
         <Route path="posts" element={<PostManagement />} />
       </Route>
