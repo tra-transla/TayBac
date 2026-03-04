@@ -18,7 +18,9 @@ import {
   Newspaper,
   FileText,
   Calendar,
-  ArrowRight
+  ArrowRight,
+  Eye,
+  EyeOff
 } from 'lucide-react';
 import { TOUR_LOCATIONS, TourLocation } from './data/tours';
 import { cn } from './lib/utils';
@@ -42,6 +44,7 @@ function LandingPage() {
   const [posts, setPosts] = useState<Post[]>([]);
   const [tours, setTours] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [showInfo, setShowInfo] = useState(true);
 
   useEffect(() => {
     const handleScroll = () => setIsScrolled(window.scrollY > 50);
@@ -385,18 +388,34 @@ function LandingPage() {
             >
               {/* Modal Header */}
               <div className="absolute top-0 left-0 right-0 z-10 p-6 flex justify-between items-start pointer-events-none">
-                <div className="pointer-events-auto bg-black/40 backdrop-blur-md p-4 rounded-2xl border border-white/10 max-w-md">
-                  <h2 className="text-xl font-bold text-white mb-1">{selectedTour.name}</h2>
-                  <div className="flex items-center gap-2 text-stone-300 text-xs mb-2">
-                    <MapPin className="w-3 h-3" />
-                    <span>Thành phố Sơn La, Việt Nam</span>
-                  </div>
-                  <p className="text-stone-400 text-xs leading-relaxed hidden md:block">
-                    {selectedTour.description}
-                  </p>
-                </div>
+                <AnimatePresence>
+                  {showInfo && (
+                    <motion.div 
+                      initial={{ opacity: 0, x: -20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      exit={{ opacity: 0, x: -20 }}
+                      className="pointer-events-auto bg-black/40 backdrop-blur-md p-4 rounded-2xl border border-white/10 max-w-md"
+                    >
+                      <h2 className="text-xl font-bold text-white mb-1">{selectedTour.name}</h2>
+                      <div className="flex items-center gap-2 text-stone-300 text-xs mb-2">
+                        <MapPin className="w-3 h-3" />
+                        <span>Thành phố Sơn La, Việt Nam</span>
+                      </div>
+                      <p className="text-stone-400 text-xs leading-relaxed hidden md:block">
+                        {selectedTour.description}
+                      </p>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
                 
                 <div className="flex gap-2 pointer-events-auto">
+                  <button 
+                    onClick={() => setShowInfo(!showInfo)}
+                    className="w-12 h-12 bg-white/10 hover:bg-white/20 backdrop-blur-md rounded-2xl flex items-center justify-center text-white transition-all border border-white/20"
+                    title={showInfo ? "Ẩn thông tin" : "Hiện thông tin"}
+                  >
+                    {showInfo ? <EyeOff className="w-6 h-6" /> : <Eye className="w-6 h-6" />}
+                  </button>
                   <button 
                     onClick={() => setSelectedTour(null)}
                     className="w-12 h-12 bg-white/10 hover:bg-white/20 backdrop-blur-md rounded-2xl flex items-center justify-center text-white transition-all border border-white/20"
