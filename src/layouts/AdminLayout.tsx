@@ -48,7 +48,7 @@ export default function AdminLayout() {
             </div>
             <div>
               <h1 className="text-lg font-bold tracking-tight leading-none">ADMIN</h1>
-              <p className="text-[10px] uppercase tracking-widest text-stone-400 font-semibold">Son La Tourism</p>
+              <p className="text-[10px] uppercase tracking-widest text-stone-400 font-semibold">Tây Bắc Tourist</p>
             </div>
           </div>
 

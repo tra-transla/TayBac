@@ -52,7 +52,7 @@ export default function Dashboard() {
     <div className="p-8">
       <div className="mb-10">
         <h2 className="text-3xl font-serif font-bold text-stone-900">Chào mừng trở lại!</h2>
-        <p className="text-stone-500 mt-1">Đây là tổng quan về hoạt động quản lý du lịch Sơn La.</p>
+        <p className="text-stone-500 mt-1">Đây là tổng quan về hoạt động quản lý du lịch Tây Bắc.</p>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">

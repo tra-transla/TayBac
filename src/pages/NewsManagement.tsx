@@ -93,7 +93,7 @@ export default function NewsManagement() {
       <div className="flex justify-between items-center mb-8">
         <div>
           <h2 className="text-2xl font-bold text-stone-900">Quản lý Tin tức</h2>
-          <p className="text-stone-500">Cập nhật các tin tức mới nhất về du lịch Sơn La</p>
+          <p className="text-stone-500">Cập nhật các tin tức mới nhất về du lịch Tây Bắc</p>
         </div>
         <button 
           onClick={() => handleOpenModal()}

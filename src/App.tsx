@@ -102,7 +102,7 @@ function LandingPage() {
               <Navigation className="w-6 h-6" />
             </div>
             <div>
-              <h1 className="text-lg font-bold tracking-tight leading-none">SƠN LA CITY</h1>
+              <h1 className="text-lg font-bold tracking-tight leading-none uppercase">TÂY BẮC TOURIST</h1>
               <p className="text-[10px] uppercase tracking-widest text-stone-500 font-semibold">Virtual Tours</p>
             </div>
           </div>
@@ -157,7 +157,7 @@ function LandingPage() {
         <div className="absolute inset-0 z-0">
           <img 
             src="https://picsum.photos/seed/sonla-hero/1920/1080" 
-            alt="Son La Landscape" 
+            alt="Tây Bắc Landscape" 
             className="w-full h-full object-cover brightness-50"
             referrerPolicy="no-referrer"
           />
@@ -174,8 +174,8 @@ function LandingPage() {
               Khám phá vùng đất Tây Bắc
             </span>
             <h2 className="text-5xl md:text-7xl font-serif text-white mb-6 leading-tight">
-              Hành Trình Di Sản <br />
-              <span className="italic">Thành Phố Sơn La</span>
+              Hành trình Di sản <br />
+              <span className="italic">Tây Bắc - Việt Nam</span>
             </h2>
             <p className="text-lg text-stone-200 mb-10 max-w-2xl mx-auto leading-relaxed">
               Trải nghiệm vẻ đẹp hùng vĩ của núi rừng, chiều sâu lịch sử và bản sắc văn hóa độc đáo qua công nghệ tham quan ảo 360 độ.
@@ -272,7 +272,7 @@ function LandingPage() {
             <div className="flex items-center justify-between mb-12">
               <div>
                 <h3 className="text-3xl font-serif mb-2">Tin Tức Mới Nhất</h3>
-                <p className="text-stone-500 text-sm">Cập nhật những thông tin mới nhất về du lịch Sơn La</p>
+                <p className="text-stone-500 text-sm">Cập nhật những thông tin mới nhất về du lịch Tây Bắc</p>
               </div>
               <Newspaper className="w-10 h-10 text-stone-300" />
             </div>
@@ -411,7 +411,7 @@ function LandingPage() {
                       <h2 className="text-xl font-bold text-white mb-1">{selectedTour.name}</h2>
                       <div className="flex items-center gap-2 text-stone-300 text-xs mb-2">
                         <MapPin className="w-3 h-3" />
-                        <span>Thành phố Sơn La, Việt Nam</span>
+                        <span>Vùng đất Tây Bắc, Việt Nam</span>
                       </div>
                       <p className="text-stone-400 text-xs leading-relaxed hidden md:block">
                         {selectedTour.description}
@@ -481,10 +481,10 @@ function LandingPage() {
               <div className="w-10 h-10 bg-emerald-600 rounded-xl flex items-center justify-center text-white">
                 <Navigation className="w-6 h-6" />
               </div>
-              <h2 className="text-2xl font-bold tracking-tight">SƠN LA CITY</h2>
+              <h2 className="text-2xl font-bold tracking-tight uppercase">TÂY BẮC TOURIST</h2>
             </div>
             <p className="text-stone-400 max-w-md leading-relaxed mb-8">
-              Trang web cung cấp trải nghiệm tham quan ảo các di tích lịch sử, danh lam thắng cảnh tại thành phố Sơn La. Nhằm quảng bá hình ảnh du lịch địa phương đến với du khách trong và ngoài nước.
+              Trang web cung cấp trải nghiệm tham quan ảo các di tích lịch sử, danh lam thắng cảnh tại vùng đất Tây Bắc. Nhằm quảng bá hình ảnh du lịch địa phương đến với du khách trong và ngoài nước.
             </p>
             <div className="flex gap-4">
               {/* Social icons could go here */}
@@ -506,15 +506,15 @@ function LandingPage() {
             <ul className="space-y-4 text-stone-400">
               <li className="flex items-start gap-3">
                 <MapPin className="w-5 h-5 shrink-0 text-emerald-600" />
-                <span>Thành phố Sơn La, Tỉnh Sơn La, Việt Nam</span>
+                <span>Vùng đất Tây Bắc, Việt Nam</span>
               </li>
-              <li>Nguồn dữ liệu: sonlacity.vietnaminfo.net</li>
+              <li>Nguồn dữ liệu: vietnaminfo.net</li>
             </ul>
           </div>
         </div>
         
         <div className="max-w-7xl mx-auto mt-20 pt-8 border-t border-white/10 flex flex-col md:flex-row justify-between items-center gap-4 text-stone-500 text-sm">
-          <p>© {new Date().getFullYear()} Son La City Virtual Tours. All rights reserved.</p>
+          <p>© {new Date().getFullYear()} Tây Bắc Tourist Virtual Tours. All rights reserved.</p>
           <div className="flex gap-8">
             <a href="#" className="hover:text-white transition-colors">Privacy Policy</a>
             <a href="#" className="hover:text-white transition-colors">Terms of Service</a>

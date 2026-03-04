@@ -39,7 +39,7 @@ export default function Login() {
             <LogIn className="w-8 h-8" />
           </div>
           <h1 className="text-3xl font-serif font-bold text-stone-900">Admin Login</h1>
-          <p className="text-stone-500 mt-2">Quản lý nội dung Son La City Virtual Tours</p>
+          <p className="text-stone-500 mt-2">Quản lý nội dung Tây Bắc Tourist Virtual Tours</p>
         </div>
 
         <div className="bg-white p-8 rounded-[2rem] shadow-xl shadow-stone-200 border border-stone-100">
@@ -96,7 +96,7 @@ export default function Login() {
         </div>
 
         <p className="text-center mt-8 text-stone-400 text-sm">
-          &copy; {new Date().getFullYear()} Son La City Tourism Admin
+          &copy; {new Date().getFullYear()} Tây Bắc Tourist Admin
         </p>
       </div>
     </div>
