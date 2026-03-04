@@ -18,16 +18,18 @@ export default function Dashboard() {
     postsCount: 0,
     toursCount: 0,
     categoriesCount: 0,
+    slidesCount: 0,
   });
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     async function fetchStats() {
-      const [newsRes, postsRes, toursRes, categoriesRes] = await Promise.all([
+      const [newsRes, postsRes, toursRes, categoriesRes, slidesRes] = await Promise.all([
         supabase.from('news').select('*', { count: 'exact', head: true }),
         supabase.from('posts').select('*', { count: 'exact', head: true }),
         supabase.from('tours').select('*', { count: 'exact', head: true }),
-        supabase.from('categories').select('*', { count: 'exact', head: true })
+        supabase.from('categories').select('*', { count: 'exact', head: true }),
+        supabase.from('slides').select('*', { count: 'exact', head: true })
       ]);
 
       setStats({
@@ -35,6 +37,7 @@ export default function Dashboard() {
         postsCount: postsRes.count || 0,
         toursCount: toursRes.count || 0,
         categoriesCount: categoriesRes.count || 0,
+        slidesCount: slidesRes.count || 0,
       });
       setLoading(false);
     }
@@ -44,7 +47,7 @@ export default function Dashboard() {
   const cards = [
     { label: 'Tổng điểm đến', value: stats.toursCount, icon: MapPin, color: 'bg-emerald-600', trend: '+4' },
     { label: 'Tổng danh mục', value: stats.categoriesCount, icon: Tags, color: 'bg-indigo-500', trend: '+2' },
-    { label: 'Tổng tin tức', value: stats.newsCount, icon: Newspaper, color: 'bg-blue-500', trend: '+12%' },
+    { label: 'Tổng slide nền', value: stats.slidesCount, icon: Newspaper, color: 'bg-blue-500', trend: '+1' },
     { label: 'Tổng bài viết', value: stats.postsCount, icon: FileText, color: 'bg-purple-500', trend: '+5%' },
   ];
 

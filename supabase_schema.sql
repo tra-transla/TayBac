@@ -27,7 +27,9 @@ alter table categories enable row level security;
 drop policy if exists "Categories are viewable by everyone" on categories;
 create policy "Categories are viewable by everyone" on categories for select using (true);
 drop policy if exists "Categories are manageable by authenticated users" on categories;
-create policy "Categories are manageable by authenticated users" on categories for all using (auth.role() = 'authenticated');
+create policy "Categories are manageable by authenticated users" on categories for all 
+  using (auth.role() = 'authenticated')
+  with check (auth.role() = 'authenticated');
 
 -- 2. Create Posts Table
 create table if not exists posts (
@@ -48,7 +50,9 @@ alter table posts enable row level security;
 drop policy if exists "Posts are viewable by everyone" on posts;
 create policy "Posts are viewable by everyone" on posts for select using (true);
 drop policy if exists "Posts are manageable by authenticated users" on posts;
-create policy "Posts are manageable by authenticated users" on posts for all using (auth.role() = 'authenticated');
+create policy "Posts are manageable by authenticated users" on posts for all 
+  using (auth.role() = 'authenticated')
+  with check (auth.role() = 'authenticated');
 
 -- 3. Create Tours Table
 create table if not exists tours (
@@ -68,7 +72,9 @@ alter table tours enable row level security;
 drop policy if exists "Tours are viewable by everyone" on tours;
 create policy "Tours are viewable by everyone" on tours for select using (true);
 drop policy if exists "Tours are manageable by authenticated users" on tours;
-create policy "Tours are manageable by authenticated users" on tours for all using (auth.role() = 'authenticated');
+create policy "Tours are manageable by authenticated users" on tours for all 
+  using (auth.role() = 'authenticated')
+  with check (auth.role() = 'authenticated');
 
 -- 4. Create News Table
 create table if not exists news (
@@ -88,7 +94,9 @@ alter table news enable row level security;
 drop policy if exists "News are viewable by everyone" on news;
 create policy "News are viewable by everyone" on news for select using (true);
 drop policy if exists "News are manageable by authenticated users" on news;
-create policy "News are manageable by authenticated users" on news for all using (auth.role() = 'authenticated');
+create policy "News are manageable by authenticated users" on news for all 
+  using (auth.role() = 'authenticated')
+  with check (auth.role() = 'authenticated');
 
 -- 5. Insert Initial Categories
 insert into categories (name, slug) values 
@@ -116,4 +124,28 @@ alter table slides enable row level security;
 drop policy if exists "Slides are viewable by everyone" on slides;
 create policy "Slides are viewable by everyone" on slides for select using (true);
 drop policy if exists "Slides are manageable by authenticated users" on slides;
-create policy "Slides are manageable by authenticated users" on slides for all using (auth.role() = 'authenticated');
+create policy "Slides are manageable by authenticated users" on slides for all 
+  using (auth.role() = 'authenticated')
+  with check (auth.role() = 'authenticated');
+
+-- 7. Create Songs Table
+create table if not exists songs (
+  id uuid default gen_random_uuid() primary key,
+  title text not null,
+  artist text,
+  youtube_url text not null,
+  thumbnail_url text,
+  order_index integer default 0,
+  created_at timestamp with time zone default timezone('utc'::text, now()) not null
+);
+
+-- Enable RLS for songs
+alter table songs enable row level security;
+
+-- Policies for songs
+drop policy if exists "Songs are viewable by everyone" on songs;
+create policy "Songs are viewable by everyone" on songs for select using (true);
+drop policy if exists "Songs are manageable by authenticated users" on songs;
+create policy "Songs are manageable by authenticated users" on songs for all 
+  using (auth.role() = 'authenticated')
+  with check (auth.role() = 'authenticated');

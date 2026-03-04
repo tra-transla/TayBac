@@ -75,7 +75,8 @@ export default function SlideManagement() {
         .update(formData)
         .eq('id', editingSlide.id);
       if (error) {
-        alert('Lỗi khi cập nhật slide: ' + error.message);
+        console.error('Supabase error:', error);
+        alert('Lỗi khi cập nhật slide: ' + (error.message || 'Vui lòng kiểm tra quyền truy cập (RLS)'));
       } else {
         fetchSlides();
         setIsModalOpen(false);
@@ -85,7 +86,8 @@ export default function SlideManagement() {
         .from('slides')
         .insert([formData]);
       if (error) {
-        alert('Lỗi khi thêm slide: ' + error.message);
+        console.error('Supabase error:', error);
+        alert('Lỗi khi thêm slide: ' + (error.message || 'Vui lòng kiểm tra quyền truy cập (RLS)'));
       } else {
         fetchSlides();
         setIsModalOpen(false);

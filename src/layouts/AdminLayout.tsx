@@ -13,7 +13,8 @@ import {
   Navigation,
   MapPin,
   Tags,
-  Image as ImageIcon
+  Image as ImageIcon,
+  Music
 } from 'lucide-react';
 import { cn } from '../lib/utils';
 
@@ -30,6 +31,7 @@ export default function AdminLayout() {
   const menuItems = [
     { icon: LayoutDashboard, label: 'Dashboard', path: '/admin' },
     { icon: ImageIcon, label: 'Slide nền', path: '/admin/slides' },
+    { icon: Music, label: 'Video nhạc', path: '/admin/songs' },
     { icon: MapPin, label: 'Điểm đến', path: '/admin/tours' },
     { icon: Tags, label: 'Danh mục', path: '/admin/categories' },
     { icon: Newspaper, label: 'Tin tức', path: '/admin/news' },

@@ -20,7 +20,8 @@ import {
   Calendar,
   ArrowRight,
   Eye,
-  EyeOff
+  EyeOff,
+  Youtube
 } from 'lucide-react';
 import { TOUR_LOCATIONS, TourLocation } from './data/tours';
 import { cn } from './lib/utils';
@@ -36,6 +37,7 @@ import PostManagement from './pages/PostManagement';
 import TourManagement from './pages/TourManagement';
 import CategoryManagement from './pages/CategoryManagement';
 import SlideManagement from './pages/SlideManagement';
+import SongManagement from './pages/SongManagement';
 import { ProtectedRoute } from './components/ProtectedRoute';
 
 function LandingPage() {
@@ -47,6 +49,7 @@ function LandingPage() {
   const [tours, setTours] = useState<any[]>([]);
   const [categories, setCategories] = useState<any[]>([]);
   const [slides, setSlides] = useState<any[]>([]);
+  const [songs, setSongs] = useState<any[]>([]);
   const [currentSlide, setCurrentSlide] = useState(0);
   const [loading, setLoading] = useState(true);
   const [showInfo, setShowInfo] = useState(true);
@@ -57,18 +60,20 @@ function LandingPage() {
     
     async function fetchData() {
       setLoading(true);
-      const [newsRes, postsRes, toursRes, categoriesRes, slidesRes] = await Promise.all([
+      const [newsRes, postsRes, toursRes, categoriesRes, slidesRes, songsRes] = await Promise.all([
         supabase.from('news').select('*').order('created_at', { ascending: false }).limit(3),
         supabase.from('posts').select('*, categories(name)').order('created_at', { ascending: false }).limit(4),
         supabase.from('tours').select('*, categories(name)').order('created_at', { ascending: false }),
         supabase.from('categories').select('*').order('name', { ascending: true }),
-        supabase.from('slides').select('*').eq('is_active', true).order('order_index', { ascending: true })
+        supabase.from('slides').select('*').eq('is_active', true).order('order_index', { ascending: true }),
+        supabase.from('songs').select('*').order('order_index', { ascending: true })
       ]);
       
       if (newsRes.data) setNews(newsRes.data);
       if (postsRes.data) setPosts(postsRes.data);
       if (categoriesRes.data) setCategories(categoriesRes.data);
       if (slidesRes.data) setSlides(slidesRes.data);
+      if (songsRes.data) setSongs(songsRes.data);
       
       if (toursRes.data && toursRes.data.length > 0) {
         setTours(toursRes.data);
@@ -333,6 +338,51 @@ function LandingPage() {
           ))}
         </div>
       </section>
+
+      {/* Music Videos Section */}
+      {songs.length > 0 && (
+        <section className="py-24 bg-stone-900 text-white overflow-hidden">
+          <div className="max-w-7xl mx-auto px-6">
+            <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12">
+              <div>
+                <span className="text-emerald-400 text-xs font-bold uppercase tracking-widest mb-3 block">Âm vang núi rừng</span>
+                <h2 className="text-4xl md:text-5xl font-serif font-bold">Video nhạc về Tây Bắc</h2>
+              </div>
+              <p className="text-stone-400 max-w-md">
+                Lắng nghe những giai điệu đậm chất đại ngàn, hòa mình vào không gian văn hóa đặc sắc của các dân tộc vùng cao.
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+              {songs.map((song) => (
+                <motion.div 
+                  key={song.id}
+                  whileHover={{ y: -10 }}
+                  className="group"
+                >
+                  <a href={song.youtube_url} target="_blank" rel="noopener noreferrer" className="block">
+                    <div className="relative aspect-video rounded-3xl overflow-hidden mb-6 shadow-2xl shadow-black/50">
+                      <img 
+                        src={song.thumbnail_url} 
+                        alt={song.title}
+                        className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                        referrerPolicy="no-referrer"
+                      />
+                      <div className="absolute inset-0 bg-black/20 group-hover:bg-black/40 transition-colors flex items-center justify-center">
+                        <div className="w-16 h-16 bg-white/20 backdrop-blur-md rounded-full flex items-center justify-center border border-white/30 group-hover:scale-110 group-hover:bg-emerald-600 group-hover:border-emerald-500 transition-all duration-500">
+                          <Youtube className="w-8 h-8 text-white fill-white" />
+                        </div>
+                      </div>
+                    </div>
+                    <h3 className="text-xl font-bold mb-1 group-hover:text-emerald-400 transition-colors">{song.title}</h3>
+                    <p className="text-stone-400 text-sm">{song.artist}</p>
+                  </a>
+                </motion.div>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* News Section */}
       {news.length > 0 && (
@@ -628,6 +678,7 @@ export default function App() {
         <Route path="tours" element={<TourManagement />} />
         <Route path="categories" element={<CategoryManagement />} />
         <Route path="slides" element={<SlideManagement />} />
+        <Route path="songs" element={<SongManagement />} />
         <Route path="news" element={<NewsManagement />} />
         <Route path="posts" element={<PostManagement />} />
       </Route>

@@ -47,3 +47,13 @@ export interface Slide {
   is_active: boolean;
   created_at: string;
 }
+
+export interface Song {
+  id: string;
+  title: string;
+  artist: string;
+  youtube_url: string;
+  thumbnail_url: string;
+  order_index: number;
+  created_at: string;
+}
