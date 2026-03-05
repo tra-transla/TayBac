@@ -144,7 +144,19 @@ function LandingPage() {
       )}>
         <div className="max-w-7xl mx-auto flex justify-between items-center">
           <div className="flex items-center gap-2">
-            <div className="relative w-10 h-10 bg-emerald-600 rounded-xl flex items-center justify-center text-white shadow-lg shadow-emerald-200 overflow-hidden">
+            <img 
+              src="https://iili.io/qCZnJef.png" 
+              alt="Tây Bắc Tourist Logo" 
+              className="w-12 h-12 object-contain"
+              referrerPolicy="no-referrer"
+              onError={(e) => {
+                // Fallback to icons if image is missing
+                e.currentTarget.style.display = 'none';
+                const fallback = e.currentTarget.parentElement?.querySelector('.logo-fallback');
+                if (fallback) fallback.classList.remove('hidden');
+              }}
+            />
+            <div className="logo-fallback hidden relative w-10 h-10 bg-emerald-600 rounded-xl flex items-center justify-center text-white shadow-lg shadow-emerald-200 overflow-hidden">
               <Sun className="absolute -top-1 -right-1 w-5 h-5 text-yellow-300 opacity-50" />
               <Mountain className="w-6 h-6 relative z-10" />
               <div className="absolute bottom-0 left-0 right-0 h-1/3 bg-blue-500/30" />
@@ -368,104 +380,6 @@ function LandingPage() {
         </div>
       </section>
 
-      {/* Music Videos Section */}
-      {songs.length > 0 && (
-        <section className="py-24 bg-white text-stone-900 overflow-hidden">
-          <div className="max-w-7xl mx-auto px-6">
-            <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-10">
-              <div>
-                <span className="text-emerald-600 text-xl md:text-2xl font-serif font-bold uppercase tracking-[0.2em] mb-2 block">Âm vang núi rừng</span>
-              </div>
-              <p className="text-stone-500 text-sm max-w-md leading-relaxed">
-                Lắng nghe những giai điệu đậm chất đại ngàn, hòa mình vào không gian văn hóa đặc sắc của các dân tộc vùng cao.
-              </p>
-            </div>
-
-            <div className="flex flex-col lg:flex-row bg-white border border-stone-200 overflow-hidden rounded-2xl shadow-sm">
-              {/* Song List (Left) - Table-like structure */}
-              <div className="lg:w-1/3 flex flex-col border-r border-stone-200 max-h-[450px] overflow-y-auto custom-scrollbar bg-white">
-                <div className="p-3 border-b border-stone-200 bg-stone-50 text-[9px] font-bold uppercase tracking-[0.15em] text-stone-400">
-                  Danh sách bài hát
-                </div>
-                {songs.map((song, index) => (
-                  <button
-                    key={song.id}
-                    onClick={() => {
-                      setCurrentSongIndex(index);
-                      setIsPlaying(true);
-                    }}
-                    className={cn(
-                      "flex items-center gap-3 p-3 transition-all text-left border-b border-stone-50",
-                      currentSongIndex === index 
-                        ? "bg-emerald-50/50 text-emerald-700" 
-                        : "hover:bg-stone-50 text-stone-600"
-                    )}
-                  >
-                    <div className="w-5 text-[9px] font-mono text-stone-300">{(index + 1).toString().padStart(2, '0')}</div>
-                    <div className="flex-1 min-w-0">
-                      <h4 className="text-[13px] font-medium truncate leading-tight mb-0.5">{song.title}</h4>
-                      <p className="text-stone-400 text-[10px] truncate uppercase tracking-wide">{song.artist}</p>
-                    </div>
-                    {currentSongIndex === index && isPlaying && (
-                      <Music className="w-3 h-3 text-emerald-500 animate-pulse" />
-                    )}
-                  </button>
-                ))}
-              </div>
-
-              {/* Video Player (Right) */}
-              <div className="lg:w-2/3 aspect-video bg-stone-100 relative group">
-                <Player
-                  url={getYoutubeUrl(songs[currentSongIndex].youtube_url)}
-                  width="100%"
-                  height="100%"
-                  playing={isPlaying}
-                  controls={true}
-                  onEnded={() => {
-                    const nextIndex = (currentSongIndex + 1) % songs.length;
-                    setCurrentSongIndex(nextIndex);
-                    setIsPlaying(true);
-                  }}
-                  onPlay={() => setIsPlaying(true)}
-                  onPause={() => setIsPlaying(false)}
-                  onError={(e: any) => {
-                    console.error("Player Error:", e);
-                    setIsPlaying(false);
-                  }}
-                  config={{
-                    youtube: {
-                      playerVars: { 
-                        autoplay: 1, 
-                        rel: 0, 
-                        modestbranding: 1,
-                        origin: window.location.origin,
-                        enablejsapi: 1,
-                        playsinline: 1
-                      }
-                    }
-                  }}
-                />
-                
-                {!isPlaying && (
-                  <div 
-                    className="absolute inset-0 flex items-center justify-center bg-white/60 backdrop-blur-[2px] cursor-pointer group"
-                    onClick={() => setIsPlaying(true)}
-                  >
-                    <div className="w-14 h-14 bg-emerald-600 rounded-full flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
-                      <Youtube className="w-7 h-7 text-white fill-white" />
-                    </div>
-                    <div className="absolute bottom-5 left-6 text-left">
-                      <p className="text-emerald-600 text-[9px] font-bold uppercase tracking-widest mb-1">Sẵn sàng phát</p>
-                      <h3 className="text-lg font-serif font-bold text-stone-900">{songs[currentSongIndex].title}</h3>
-                    </div>
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
-        </section>
-      )}
-
       {/* News Section */}
       {news.length > 0 && (
         <section className="bg-stone-100 py-24 px-6">
@@ -587,6 +501,103 @@ function LandingPage() {
           </div>
         </section>
       )}
+{/* Music Videos Section */}
+      {songs.length > 0 && (
+        <section className="py-24 bg-white text-stone-900 overflow-hidden">
+          <div className="max-w-7xl mx-auto px-6">
+            <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-10">
+              <div>
+                <span className="text-emerald-600 text-xl md:text-2xl font-serif font-bold uppercase tracking-[0.2em] mb-2 block">Âm vang núi rừng</span>
+              </div>
+              <p className="text-stone-500 text-sm max-w-md leading-relaxed">
+                Lắng nghe những giai điệu đậm chất đại ngàn, hòa mình vào không gian văn hóa đặc sắc của các dân tộc vùng cao.
+              </p>
+            </div>
+
+            <div className="flex flex-col lg:flex-row bg-white border border-stone-200 overflow-hidden rounded-2xl shadow-sm">
+              {/* Song List (Left) - Table-like structure */}
+              <div className="lg:w-1/3 flex flex-col border-r border-stone-200 max-h-[450px] overflow-y-auto custom-scrollbar bg-white">
+                <div className="p-3 border-b border-stone-200 bg-stone-50 text-[9px] font-bold uppercase tracking-[0.15em] text-stone-400">
+                  Danh sách bài hát
+                </div>
+                {songs.map((song, index) => (
+                  <button
+                    key={song.id}
+                    onClick={() => {
+                      setCurrentSongIndex(index);
+                      setIsPlaying(true);
+                    }}
+                    className={cn(
+                      "flex items-center gap-3 p-3 transition-all text-left border-b border-stone-50",
+                      currentSongIndex === index 
+                        ? "bg-emerald-50/50 text-emerald-700" 
+                        : "hover:bg-stone-50 text-stone-600"
+                    )}
+                  >
+                    <div className="w-5 text-[9px] font-mono text-stone-300">{(index + 1).toString().padStart(2, '0')}</div>
+                    <div className="flex-1 min-w-0">
+                      <h4 className="text-[13px] font-medium truncate leading-tight mb-0.5">{song.title}</h4>
+                      <p className="text-stone-400 text-[10px] truncate uppercase tracking-wide">{song.artist}</p>
+                    </div>
+                    {currentSongIndex === index && isPlaying && (
+                      <Music className="w-3 h-3 text-emerald-500 animate-pulse" />
+                    )}
+                  </button>
+                ))}
+              </div>
+
+              {/* Video Player (Right) */}
+              <div className="lg:w-2/3 aspect-video bg-stone-100 relative group">
+                <Player
+                  url={getYoutubeUrl(songs[currentSongIndex].youtube_url)}
+                  width="100%"
+                  height="100%"
+                  playing={isPlaying}
+                  controls={true}
+                  onEnded={() => {
+                    const nextIndex = (currentSongIndex + 1) % songs.length;
+                    setCurrentSongIndex(nextIndex);
+                    setIsPlaying(true);
+                  }}
+                  onPlay={() => setIsPlaying(true)}
+                  onPause={() => setIsPlaying(false)}
+                  onError={(e: any) => {
+                    console.error("Player Error:", e);
+                    setIsPlaying(false);
+                  }}
+                  config={{
+                    youtube: {
+                      playerVars: { 
+                        autoplay: 1, 
+                        rel: 0, 
+                        modestbranding: 1,
+                        origin: window.location.origin,
+                        enablejsapi: 1,
+                        playsinline: 1
+                      }
+                    }
+                  }}
+                />
+                
+                {!isPlaying && (
+                  <div 
+                    className="absolute inset-0 flex items-center justify-center bg-white/60 backdrop-blur-[2px] cursor-pointer group"
+                    onClick={() => setIsPlaying(true)}
+                  >
+                    <div className="w-14 h-14 bg-emerald-600 rounded-full flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
+                      <Youtube className="w-7 h-7 text-white fill-white" />
+                    </div>
+                    <div className="absolute bottom-5 left-6 text-left">
+                      <p className="text-emerald-600 text-[9px] font-bold uppercase tracking-widest mb-1">Sẵn sàng phát</p>
+                      <h3 className="text-lg font-serif font-bold text-stone-900">{songs[currentSongIndex].title}</h3>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* Tour Viewer Modal */}
       <AnimatePresence>
@@ -688,7 +699,18 @@ function LandingPage() {
         <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-12">
           <div className="md:col-span-2">
             <div className="flex items-center gap-2 mb-6">
-              <div className="relative w-10 h-10 bg-emerald-600 rounded-xl flex items-center justify-center text-white overflow-hidden">
+              <img 
+                src="https://iili.io/qCZnJef.png" 
+                alt="Tây Bắc Tourist Logo" 
+                className="w-14 h-14 object-contain"
+                referrerPolicy="no-referrer"
+                onError={(e) => {
+                  e.currentTarget.style.display = 'none';
+                  const fallback = e.currentTarget.parentElement?.querySelector('.logo-fallback');
+                  if (fallback) fallback.classList.remove('hidden');
+                }}
+              />
+              <div className="logo-fallback hidden relative w-10 h-10 bg-emerald-600 rounded-xl flex items-center justify-center text-white overflow-hidden">
                 <Sun className="absolute -top-1 -right-1 w-5 h-5 text-yellow-300 opacity-50" />
                 <Mountain className="w-6 h-6 relative z-10" />
                 <div className="absolute bottom-0 left-0 right-0 h-1/3 bg-blue-500/30" />
