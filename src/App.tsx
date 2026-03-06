@@ -60,14 +60,16 @@ function LandingPage() {
   const [isPlayerReady, setIsPlayerReady] = useState(false);
   const [loading, setLoading] = useState(true);
   const [showInfo, setShowInfo] = useState(true);
+  const [currentPage, setCurrentPage] = useState(1);
+  const ITEMS_PER_PAGE = 9;
 
   const Player = ReactPlayer as any;
 
   const getYoutubeUrl = (url: string) => {
     if (!url) return '';
     
-    // Extract ID using a robust regex
-    const match = url.match(/(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/(?:[^\/\n\s]+\/\S+\/|(?:v|e(?:mbed)?)\/|\S*?[?&]v=)|youtu\.be\/)([a-zA-Z0-9_-]{11})/);
+    // Improved regex to handle more YouTube URL variants including /live/, /shorts/, etc.
+    const match = url.match(/(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/(?:[^\/\n\s]+\/\S+\/|(?:v|e(?:mbed)?|shorts|live)\/|\S*?[?&]v=)|youtu\.be\/)([a-zA-Z0-9_-]{11})/);
     const videoId = match ? match[1] : null;
     
     if (videoId) {
@@ -84,6 +86,13 @@ function LandingPage() {
 
   useEffect(() => {
     setIsPlayerReady(false);
+    
+    // Safety timeout: if player doesn't report ready within 7 seconds, hide loader anyway
+    const timer = setTimeout(() => {
+      setIsPlayerReady(true);
+    }, 7000);
+    
+    return () => clearTimeout(timer);
   }, [currentSongIndex]);
 
   useEffect(() => {
@@ -136,9 +145,25 @@ function LandingPage() {
     }
   }, [slides]);
 
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [filter]);
+
+  useEffect(() => {
+    if (currentPage > 1) {
+      document.getElementById('tours')?.scrollIntoView({ behavior: 'smooth' });
+    }
+  }, [currentPage]);
+
   const filteredTours = filter 
     ? tours.filter(t => (t.categories?.name || t.category) === filter)
     : tours;
+
+  const totalPages = Math.ceil(filteredTours.length / ITEMS_PER_PAGE);
+  const paginatedTours = filteredTours.slice(
+    (currentPage - 1) * ITEMS_PER_PAGE,
+    currentPage * ITEMS_PER_PAGE
+  );
 
   return (
     <div className="min-h-screen bg-stone-50 selection:bg-emerald-100 selection:text-emerald-900">
@@ -348,7 +373,7 @@ function LandingPage() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {filteredTours.map((tour, index) => (
+          {paginatedTours.map((tour, index) => (
             <motion.div
               layout
               initial={{ opacity: 0, scale: 0.9 }}
@@ -383,6 +408,44 @@ function LandingPage() {
             </motion.div>
           ))}
         </div>
+
+        {/* Pagination */}
+        {totalPages > 1 && (
+          <div className="mt-16 flex justify-center items-center gap-2">
+            <button
+              onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+              disabled={currentPage === 1}
+              className="p-2 rounded-xl border border-stone-200 disabled:opacity-30 disabled:cursor-not-allowed hover:bg-stone-50 transition-colors"
+            >
+              <ChevronRight className="w-5 h-5 rotate-180" />
+            </button>
+            
+            <div className="flex items-center gap-1">
+              {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                <button
+                  key={page}
+                  onClick={() => setCurrentPage(page)}
+                  className={cn(
+                    "w-10 h-10 rounded-xl text-sm font-bold transition-all",
+                    currentPage === page 
+                      ? "bg-emerald-600 text-white shadow-lg shadow-emerald-200" 
+                      : "text-stone-500 hover:bg-stone-100"
+                  )}
+                >
+                  {page}
+                </button>
+              ))}
+            </div>
+
+            <button
+              onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+              disabled={currentPage === totalPages}
+              className="p-2 rounded-xl border border-stone-200 disabled:opacity-30 disabled:cursor-not-allowed hover:bg-stone-50 transition-colors"
+            >
+              <ChevronRight className="w-5 h-5" />
+            </button>
+          </div>
+        )}
       </section>
 
       {/* News Section */}
@@ -553,25 +616,35 @@ function LandingPage() {
               </div>
 
               {/* Video Player (Right) */}
-              <div className="lg:w-2/3 aspect-video bg-stone-100 relative group">
+              <div className="lg:w-2/3 aspect-video bg-stone-100 relative group overflow-hidden">
                 {songs[currentSongIndex] && (
                   <Player
-                    key={songs[currentSongIndex].id}
+                    key={`player-${currentSongIndex}-${songs[currentSongIndex].id}`}
                     url={getYoutubeUrl(songs[currentSongIndex].youtube_url)}
                     width="100%"
                     height="100%"
                     playing={isPlaying}
+                    volume={1}
+                    muted={false}
                     controls={true}
-                    onReady={() => setIsPlayerReady(true)}
-                    onStart={() => setIsPlayerReady(true)}
+                    onReady={() => {
+                      console.log("Player Ready");
+                      setIsPlayerReady(true);
+                    }}
+                    onStart={() => {
+                      console.log("Player Started");
+                      setIsPlayerReady(true);
+                    }}
+                    onPlay={() => {
+                      console.log("Player Playing");
+                      setIsPlaying(true);
+                      setIsPlayerReady(true);
+                    }}
                     onEnded={() => {
                       const nextIndex = (currentSongIndex + 1) % songs.length;
                       setCurrentSongIndex(nextIndex);
+                      setIsPlayerReady(false);
                       setIsPlaying(true);
-                    }}
-                    onPlay={() => {
-                      setIsPlaying(true);
-                      setIsPlayerReady(true);
                     }}
                     onPause={() => setIsPlaying(false)}
                     onError={(e: any) => {
@@ -582,10 +655,13 @@ function LandingPage() {
                     config={{
                       youtube: {
                         playerVars: { 
+                          autoplay: 1,
+                          mute: 0,
                           rel: 0, 
                           modestbranding: 1,
                           enablejsapi: 1,
-                          playsinline: 1
+                          playsinline: 1,
+                          origin: window.location.origin
                         }
                       }
                     }}
@@ -593,7 +669,7 @@ function LandingPage() {
                 )}
                 
                 {isPlaying && !isPlayerReady && (
-                  <div className="absolute inset-0 flex items-center justify-center bg-stone-100/80 backdrop-blur-[1px] z-10">
+                  <div className="absolute inset-0 flex items-center justify-center bg-stone-100/80 backdrop-blur-[1px] z-10 pointer-events-none">
                     <div className="flex flex-col items-center gap-3">
                       <div className="w-10 h-10 border-4 border-emerald-500 border-t-transparent rounded-full animate-spin" />
                       <p className="text-[10px] font-bold uppercase tracking-widest text-emerald-600">Đang tải...</p>
