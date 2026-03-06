@@ -87,10 +87,10 @@ function LandingPage() {
   useEffect(() => {
     setIsPlayerReady(false);
     
-    // Safety timeout: if player doesn't report ready within 7 seconds, hide loader anyway
+    // Safety timeout: if player doesn't report ready within 10 seconds, hide loader anyway
     const timer = setTimeout(() => {
       setIsPlayerReady(true);
-    }, 7000);
+    }, 10000);
     
     return () => clearTimeout(timer);
   }, [currentSongIndex]);
@@ -616,20 +616,28 @@ function LandingPage() {
               </div>
 
               {/* Video Player (Right) */}
-              <div className="lg:w-2/3 aspect-video bg-stone-100 relative group overflow-hidden">
+              <div className="lg:w-2/3 aspect-video bg-stone-900 relative group overflow-hidden shadow-inner">
+                {/* Background placeholder to avoid pure black if video is loading */}
+                <div className="absolute inset-0 bg-gradient-to-br from-stone-900 to-stone-800 flex items-center justify-center">
+                  <Music className="w-12 h-12 text-stone-700 opacity-20" />
+                </div>
+
                 {songs[currentSongIndex] && (
                   <Player
-                    key={`player-${currentSongIndex}-${songs[currentSongIndex].id}`}
                     url={getYoutubeUrl(songs[currentSongIndex].youtube_url)}
                     width="100%"
                     height="100%"
                     playing={isPlaying}
+                    light={!isPlaying}
                     volume={1}
                     muted={false}
                     controls={true}
                     onReady={() => {
                       console.log("Player Ready");
-                      setIsPlayerReady(true);
+                      // If not auto-playing, show the player immediately
+                      if (!isPlaying) {
+                        setIsPlayerReady(true);
+                      }
                     }}
                     onStart={() => {
                       console.log("Player Started");
