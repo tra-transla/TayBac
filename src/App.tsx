@@ -57,6 +57,7 @@ function LandingPage() {
   const [currentSlide, setCurrentSlide] = useState(0);
   const [currentSongIndex, setCurrentSongIndex] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
+  const [isPlayerReady, setIsPlayerReady] = useState(false);
   const [loading, setLoading] = useState(true);
   const [showInfo, setShowInfo] = useState(true);
 
@@ -80,6 +81,10 @@ function LandingPage() {
     
     return url;
   };
+
+  useEffect(() => {
+    setIsPlayerReady(false);
+  }, [currentSongIndex]);
 
   useEffect(() => {
     const handleScroll = () => setIsScrolled(window.scrollY > 50);
@@ -525,6 +530,7 @@ function LandingPage() {
                     key={song.id}
                     onClick={() => {
                       setCurrentSongIndex(index);
+                      setIsPlayerReady(false);
                       setIsPlaying(true);
                     }}
                     className={cn(
@@ -548,41 +554,60 @@ function LandingPage() {
 
               {/* Video Player (Right) */}
               <div className="lg:w-2/3 aspect-video bg-stone-100 relative group">
-                <Player
-                  url={getYoutubeUrl(songs[currentSongIndex].youtube_url)}
-                  width="100%"
-                  height="100%"
-                  playing={isPlaying}
-                  controls={true}
-                  onEnded={() => {
-                    const nextIndex = (currentSongIndex + 1) % songs.length;
-                    setCurrentSongIndex(nextIndex);
-                    setIsPlaying(true);
-                  }}
-                  onPlay={() => setIsPlaying(true)}
-                  onPause={() => setIsPlaying(false)}
-                  onError={(e: any) => {
-                    console.error("Player Error:", e);
-                    setIsPlaying(false);
-                  }}
-                  config={{
-                    youtube: {
-                      playerVars: { 
-                        autoplay: 1, 
-                        rel: 0, 
-                        modestbranding: 1,
-                        origin: window.location.origin,
-                        enablejsapi: 1,
-                        playsinline: 1
+                {songs[currentSongIndex] && (
+                  <Player
+                    key={songs[currentSongIndex].id}
+                    url={getYoutubeUrl(songs[currentSongIndex].youtube_url)}
+                    width="100%"
+                    height="100%"
+                    playing={isPlaying}
+                    controls={true}
+                    onReady={() => setIsPlayerReady(true)}
+                    onStart={() => setIsPlayerReady(true)}
+                    onEnded={() => {
+                      const nextIndex = (currentSongIndex + 1) % songs.length;
+                      setCurrentSongIndex(nextIndex);
+                      setIsPlaying(true);
+                    }}
+                    onPlay={() => {
+                      setIsPlaying(true);
+                      setIsPlayerReady(true);
+                    }}
+                    onPause={() => setIsPlaying(false)}
+                    onError={(e: any) => {
+                      console.error("Player Error:", e);
+                      setIsPlaying(false);
+                      setIsPlayerReady(true);
+                    }}
+                    config={{
+                      youtube: {
+                        playerVars: { 
+                          rel: 0, 
+                          modestbranding: 1,
+                          enablejsapi: 1,
+                          playsinline: 1
+                        }
                       }
-                    }
-                  }}
-                />
+                    }}
+                  />
+                )}
                 
-                {!isPlaying && (
+                {isPlaying && !isPlayerReady && (
+                  <div className="absolute inset-0 flex items-center justify-center bg-stone-100/80 backdrop-blur-[1px] z-10">
+                    <div className="flex flex-col items-center gap-3">
+                      <div className="w-10 h-10 border-4 border-emerald-500 border-t-transparent rounded-full animate-spin" />
+                      <p className="text-[10px] font-bold uppercase tracking-widest text-emerald-600">Đang tải...</p>
+                    </div>
+                  </div>
+                )}
+                
+                {!isPlaying && songs[currentSongIndex] && (
                   <div 
-                    className="absolute inset-0 flex items-center justify-center bg-white/60 backdrop-blur-[2px] cursor-pointer group"
-                    onClick={() => setIsPlaying(true)}
+                    className="absolute inset-0 flex items-center justify-center bg-white/60 backdrop-blur-[2px] cursor-pointer group z-20"
+                    onClick={() => {
+                      setIsPlayerReady(false);
+                      setIsPlaying(true);
+                    }}
                   >
                     <div className="w-14 h-14 bg-emerald-600 rounded-full flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
                       <Youtube className="w-7 h-7 text-white fill-white" />
