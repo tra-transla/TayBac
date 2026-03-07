@@ -71,18 +71,24 @@ function LandingPage() {
 
   const getYoutubeId = (url: string) => {
     if (!url) return null;
-    // Standard YouTube ID extraction
+    
+    // 1. Try standard regex for various formats
     const regExp = /^.*(youtu\.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
     const match = url.match(regExp);
     if (match && match[2].length === 11) return match[2];
     
-    // Handle shorts, live, etc.
+    // 2. Handle shorts, live, etc.
     const altMatch = url.match(/(?:shorts|live|v|embed)\/([a-zA-Z0-9_-]{11})/);
     if (altMatch) return altMatch[1];
 
-    // If it's just an 11-char string
-    if (url.length === 11 && !url.includes('/') && !url.includes('.')) return url;
+    // 3. Handle direct ID or simple strings
+    const trimmed = url.trim();
+    if (trimmed.length === 11 && !trimmed.includes('/') && !trimmed.includes('.')) return trimmed;
     
+    // 4. Fallback: try to find any 11-char string that looks like an ID
+    const lastPart = trimmed.split(/[\/\=]/).pop();
+    if (lastPart && lastPart.length === 11) return lastPart;
+
     return null;
   };
 
@@ -94,13 +100,16 @@ function LandingPage() {
   useEffect(() => {
     setIsPlayerReady(false);
     
-    // Safety timeout: if player doesn't report ready within 10 seconds, hide loader anyway
+    // Safety timeout: if player doesn't report ready within 5 seconds, 
+    // assume it's ready to try and force playback
     const timer = setTimeout(() => {
-      setIsPlayerReady(true);
-    }, 10000);
+      if (isPlaying) {
+        setIsPlayerReady(true);
+      }
+    }, 5000);
     
     return () => clearTimeout(timer);
-  }, [currentSongIndex]);
+  }, [currentSongIndex, isPlaying]);
 
   useEffect(() => {
     const handleScroll = () => setIsScrolled(window.scrollY > 50);
@@ -590,7 +599,7 @@ function LandingPage() {
               </p>
             </div>
 
-            <div className="flex flex-col lg:flex-row bg-white border border-stone-200 overflow-hidden rounded-[2.5rem] shadow-xl h-[700px]">
+            <div className="flex flex-col lg:flex-row bg-white border border-stone-200 overflow-hidden rounded-[2.5rem] shadow-xl h-[600px]">
               {/* Sidebar (Left) */}
               <div className="lg:w-96 flex flex-col border-r border-stone-100 bg-stone-50/30">
                 <div className="p-8 pb-4">
@@ -691,17 +700,24 @@ function LandingPage() {
                       url={getYoutubeUrl(songs[currentSongIndex].youtube_url)}
                       width="100%"
                       height="100%"
-                      playing={isPlaying && isPlayerReady}
+                      playing={isPlaying}
                       light={!isPlaying}
                       volume={1}
                       controls={true}
-                      onReady={() => setIsPlayerReady(true)}
+                      onReady={() => {
+                        console.log("Player is ready for:", songs[currentSongIndex]?.title);
+                        setIsPlayerReady(true);
+                      }}
+                      onStart={() => {
+                        console.log("Playback started");
+                        setIsPlayerReady(true);
+                      }}
                       onPlay={() => setIsPlaying(true)}
                       onPause={() => setIsPlaying(false)}
                       onEnded={() => setCurrentSongIndex((prev) => (prev + 1) % songs.length)}
                       onError={(e: any) => {
-                        console.error("Player Error:", e);
-                        setIsPlayerReady(true);
+                        console.error("Player Error for URL:", getYoutubeUrl(songs[currentSongIndex]?.youtube_url), e);
+                        setIsPlayerReady(true); // Hide loader even on error
                       }}
                       config={{
                         youtube: {
@@ -709,9 +725,9 @@ function LandingPage() {
                             autoplay: 1,
                             modestbranding: 1,
                             rel: 0,
-                            origin: window.location.origin,
+                            playsinline: 1,
                             enablejsapi: 1,
-                            playsinline: 1
+                            widget_referrer: window.location.href
                           }
                         }
                       }}
