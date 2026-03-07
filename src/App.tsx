@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Routes, Route, Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'motion/react';
 import ReactPlayer from 'react-player';
@@ -25,7 +25,11 @@ import {
   Youtube,
   Music,
   Mountain,
-  Sun
+  Sun,
+  SkipBack,
+  SkipForward,
+  Play,
+  Pause
 } from 'lucide-react';
 import { TOUR_LOCATIONS, TourLocation } from './data/tours';
 import { cn } from './lib/utils';
@@ -65,23 +69,26 @@ function LandingPage() {
 
   const Player = ReactPlayer as any;
 
+  const getYoutubeId = (url: string) => {
+    if (!url) return null;
+    // Standard YouTube ID extraction
+    const regExp = /^.*(youtu\.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
+    const match = url.match(regExp);
+    if (match && match[2].length === 11) return match[2];
+    
+    // Handle shorts, live, etc.
+    const altMatch = url.match(/(?:shorts|live|v|embed)\/([a-zA-Z0-9_-]{11})/);
+    if (altMatch) return altMatch[1];
+
+    // If it's just an 11-char string
+    if (url.length === 11 && !url.includes('/') && !url.includes('.')) return url;
+    
+    return null;
+  };
+
   const getYoutubeUrl = (url: string) => {
-    if (!url) return '';
-    
-    // Improved regex to handle more YouTube URL variants including /live/, /shorts/, etc.
-    const match = url.match(/(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/(?:[^\/\n\s]+\/\S+\/|(?:v|e(?:mbed)?|shorts|live)\/|\S*?[?&]v=)|youtu\.be\/)([a-zA-Z0-9_-]{11})/);
-    const videoId = match ? match[1] : null;
-    
-    if (videoId) {
-      return `https://www.youtube.com/watch?v=${videoId}`;
-    }
-    
-    // If it's just an 11-char string that looks like an ID
-    if (url.length === 11 && !url.includes('/') && !url.includes('.')) {
-      return `https://www.youtube.com/watch?v=${url}`;
-    }
-    
-    return url;
+    const id = getYoutubeId(url);
+    return id ? `https://www.youtube.com/watch?v=${id}` : url;
   };
 
   useEffect(() => {
@@ -571,137 +578,152 @@ function LandingPage() {
       )}
 {/* Music Videos Section */}
       {songs.length > 0 && (
-        <section className="py-24 bg-white text-stone-900 overflow-hidden">
+        <section className="py-24 bg-stone-50 text-stone-900 overflow-hidden">
           <div className="max-w-7xl mx-auto px-6">
-            <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-10">
+            <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12">
               <div>
-                <span className="text-emerald-600 text-xl md:text-2xl font-serif font-bold uppercase tracking-[0.2em] mb-2 block">Âm vang núi rừng</span>
+                <h2 className="text-emerald-600 text-3xl md:text-4xl font-serif font-bold uppercase tracking-[0.2em] mb-3">Âm vang núi rừng</h2>
+                <div className="h-1 w-20 bg-emerald-600 rounded-full" />
               </div>
               <p className="text-stone-500 text-sm max-w-md leading-relaxed">
                 Lắng nghe những giai điệu đậm chất đại ngàn, hòa mình vào không gian văn hóa đặc sắc của các dân tộc vùng cao.
               </p>
             </div>
 
-            <div className="flex flex-col lg:flex-row bg-white border border-stone-200 overflow-hidden rounded-2xl shadow-sm">
-              {/* Song List (Left) - Table-like structure */}
-              <div className="lg:w-1/3 flex flex-col border-r border-stone-200 max-h-[450px] overflow-y-auto custom-scrollbar bg-white">
-                <div className="p-3 border-b border-stone-200 bg-stone-50 text-[9px] font-bold uppercase tracking-[0.15em] text-stone-400">
-                  Danh sách bài hát
+            <div className="flex flex-col lg:flex-row bg-white border border-stone-200 overflow-hidden rounded-[2.5rem] shadow-xl h-[700px]">
+              {/* Sidebar (Left) */}
+              <div className="lg:w-96 flex flex-col border-r border-stone-100 bg-stone-50/30">
+                <div className="p-8 pb-4">
+                  <div className="flex items-center justify-between mb-1">
+                    <h3 className="text-xl font-bold text-stone-900">Music Player</h3>
+                    <span className="text-[10px] font-bold bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded-full">
+                      {songs.length} TRACKS
+                    </span>
+                  </div>
+                  <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-stone-400">YOUR PLAYLIST</p>
                 </div>
-                {songs.map((song, index) => (
-                  <button
-                    key={song.id}
-                    onClick={() => {
-                      setCurrentSongIndex(index);
-                      setIsPlayerReady(false);
-                      setIsPlaying(true);
-                    }}
-                    className={cn(
-                      "flex items-center gap-3 p-3 transition-all text-left border-b border-stone-50",
-                      currentSongIndex === index 
-                        ? "bg-emerald-50/50 text-emerald-700" 
-                        : "hover:bg-stone-50 text-stone-600"
-                    )}
-                  >
-                    <div className="w-5 text-[9px] font-mono text-stone-300">{(index + 1).toString().padStart(2, '0')}</div>
-                    <div className="flex-1 min-w-0">
-                      <h4 className="text-[13px] font-medium truncate leading-tight mb-0.5">{song.title}</h4>
-                      <p className="text-stone-400 text-[10px] truncate uppercase tracking-wide">{song.artist}</p>
+                
+                <div className="flex-1 overflow-y-auto custom-scrollbar px-4 pb-4">
+                  {songs.map((song, index) => (
+                    <button
+                      key={song.id}
+                      onClick={() => {
+                        setCurrentSongIndex(index);
+                        setIsPlayerReady(false);
+                        setIsPlaying(true);
+                      }}
+                      className={cn(
+                        "w-full flex items-center gap-4 p-3 rounded-2xl transition-all text-left mb-2 group",
+                        currentSongIndex === index 
+                          ? "bg-emerald-50 text-emerald-700" 
+                          : "hover:bg-stone-100 text-stone-500 hover:text-stone-900"
+                      )}
+                    >
+                      <div className="relative w-12 h-12 rounded-xl overflow-hidden flex-shrink-0 shadow-sm border border-stone-100">
+                        <img 
+                          src={song.thumbnail_url || (getYoutubeId(song.youtube_url) ? `https://img.youtube.com/vi/${getYoutubeId(song.youtube_url)}/mqdefault.jpg` : '')} 
+                          alt={song.title}
+                          className="w-full h-full object-cover"
+                          referrerPolicy="no-referrer"
+                        />
+                        {currentSongIndex === index && isPlaying && (
+                          <div className="absolute inset-0 bg-emerald-600/10 flex items-center justify-center">
+                            <Music className="w-5 h-5 text-emerald-600 animate-pulse" />
+                          </div>
+                        )}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <h4 className={cn(
+                          "text-[13px] font-bold truncate leading-tight mb-1",
+                          currentSongIndex === index ? "text-stone-900" : ""
+                        )}>{song.title}</h4>
+                        <p className="text-stone-400 text-[10px] truncate uppercase tracking-widest font-medium">{song.artist}</p>
+                      </div>
+                    </button>
+                  ))}
+                </div>
+
+                {/* Now Playing Bar (Bottom Left) */}
+                <div className="p-6 bg-white border-t border-stone-100 shadow-[0_-4px_20px_rgba(0,0,0,0.03)]">
+                  <div className="mb-4">
+                    <p className="text-[9px] font-bold uppercase tracking-[0.2em] text-stone-400 mb-1">NOW PLAYING</p>
+                    <h4 className="text-sm font-bold text-stone-900 truncate">{songs[currentSongIndex]?.title}</h4>
+                    <p className="text-[10px] text-stone-400 uppercase tracking-widest">{songs[currentSongIndex]?.artist}</p>
+                  </div>
+                  <div className="flex items-center justify-between gap-4">
+                    <div className="flex items-center gap-3">
+                      <button 
+                        onClick={() => setCurrentSongIndex((prev) => (prev - 1 + songs.length) % songs.length)}
+                        className="p-2 text-stone-400 hover:text-stone-900 hover:bg-stone-100 rounded-full transition-all"
+                      >
+                        <SkipBack className="w-4 h-4" />
+                      </button>
+                      <button 
+                        onClick={() => setIsPlaying(!isPlaying)}
+                        className="w-12 h-12 bg-emerald-600 rounded-full flex items-center justify-center text-white hover:scale-105 transition-transform shadow-lg shadow-emerald-600/20"
+                      >
+                        {isPlaying ? <Pause className="w-6 h-6 fill-current" /> : <Play className="w-6 h-6 fill-current translate-x-0.5" />}
+                      </button>
+                      <button 
+                        onClick={() => setCurrentSongIndex((prev) => (prev + 1) % songs.length)}
+                        className="p-2 text-stone-400 hover:text-stone-900 hover:bg-stone-100 rounded-full transition-all"
+                      >
+                        <SkipForward className="w-4 h-4" />
+                      </button>
                     </div>
-                    {currentSongIndex === index && isPlaying && (
-                      <Music className="w-3 h-3 text-emerald-500 animate-pulse" />
-                    )}
-                  </button>
-                ))}
+                    <div className="flex-1 h-1 bg-stone-100 rounded-full overflow-hidden">
+                      <motion.div 
+                        className="h-full bg-emerald-600"
+                        animate={{ width: isPlaying ? "100%" : "0%" }}
+                        transition={{ duration: 180, ease: "linear" }}
+                      />
+                    </div>
+                  </div>
+                </div>
               </div>
 
-              {/* Video Player (Right) */}
-              <div className="lg:w-2/3 aspect-video bg-stone-900 relative group overflow-hidden shadow-inner">
-                {/* Background placeholder to avoid pure black if video is loading */}
-                <div className="absolute inset-0 bg-gradient-to-br from-stone-900 to-stone-800 flex items-center justify-center">
-                  <Music className="w-12 h-12 text-stone-700 opacity-20" />
-                </div>
-
-                {songs[currentSongIndex] && (
-                  <Player
-                    url={getYoutubeUrl(songs[currentSongIndex].youtube_url)}
-                    width="100%"
-                    height="100%"
-                    playing={isPlaying}
-                    light={!isPlaying}
-                    volume={1}
-                    muted={false}
-                    controls={true}
-                    onReady={() => {
-                      console.log("Player Ready");
-                      // If not auto-playing, show the player immediately
-                      if (!isPlaying) {
+              {/* Main Player Area (Right) */}
+              <div className="flex-1 flex flex-col bg-stone-100/50">
+                <div className="flex-1 relative group overflow-hidden bg-stone-100">
+                  {songs[currentSongIndex] && (
+                    <Player
+                      key={songs[currentSongIndex].id}
+                      url={getYoutubeUrl(songs[currentSongIndex].youtube_url)}
+                      width="100%"
+                      height="100%"
+                      playing={isPlaying && isPlayerReady}
+                      light={!isPlaying}
+                      volume={1}
+                      controls={true}
+                      onReady={() => setIsPlayerReady(true)}
+                      onPlay={() => setIsPlaying(true)}
+                      onPause={() => setIsPlaying(false)}
+                      onEnded={() => setCurrentSongIndex((prev) => (prev + 1) % songs.length)}
+                      onError={(e: any) => {
+                        console.error("Player Error:", e);
                         setIsPlayerReady(true);
-                      }
-                    }}
-                    onStart={() => {
-                      console.log("Player Started");
-                      setIsPlayerReady(true);
-                    }}
-                    onPlay={() => {
-                      console.log("Player Playing");
-                      setIsPlaying(true);
-                      setIsPlayerReady(true);
-                    }}
-                    onEnded={() => {
-                      const nextIndex = (currentSongIndex + 1) % songs.length;
-                      setCurrentSongIndex(nextIndex);
-                      setIsPlayerReady(false);
-                      setIsPlaying(true);
-                    }}
-                    onPause={() => setIsPlaying(false)}
-                    onError={(e: any) => {
-                      console.error("Player Error:", e);
-                      setIsPlaying(false);
-                      setIsPlayerReady(true);
-                    }}
-                    config={{
-                      youtube: {
-                        playerVars: { 
-                          autoplay: 1,
-                          mute: 0,
-                          rel: 0, 
-                          modestbranding: 1,
-                          enablejsapi: 1,
-                          playsinline: 1,
-                          origin: window.location.origin
+                      }}
+                      config={{
+                        youtube: {
+                          playerVars: { 
+                            autoplay: 1,
+                            modestbranding: 1,
+                            rel: 0,
+                            origin: window.location.origin,
+                            enablejsapi: 1,
+                            playsinline: 1
+                          }
                         }
-                      }
-                    }}
-                  />
-                )}
-                
-                {isPlaying && !isPlayerReady && (
-                  <div className="absolute inset-0 flex items-center justify-center bg-stone-100/80 backdrop-blur-[1px] z-10 pointer-events-none">
-                    <div className="flex flex-col items-center gap-3">
-                      <div className="w-10 h-10 border-4 border-emerald-500 border-t-transparent rounded-full animate-spin" />
-                      <p className="text-[10px] font-bold uppercase tracking-widest text-emerald-600">Đang tải...</p>
+                      }}
+                    />
+                  )}
+                  
+                  {!isPlayerReady && isPlaying && (
+                    <div className="absolute inset-0 flex items-center justify-center bg-stone-100 z-10">
+                      <div className="w-12 h-12 border-4 border-emerald-600 border-t-transparent rounded-full animate-spin" />
                     </div>
-                  </div>
-                )}
-                
-                {!isPlaying && songs[currentSongIndex] && (
-                  <div 
-                    className="absolute inset-0 flex items-center justify-center bg-white/60 backdrop-blur-[2px] cursor-pointer group z-20"
-                    onClick={() => {
-                      setIsPlayerReady(false);
-                      setIsPlaying(true);
-                    }}
-                  >
-                    <div className="w-14 h-14 bg-emerald-600 rounded-full flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
-                      <Youtube className="w-7 h-7 text-white fill-white" />
-                    </div>
-                    <div className="absolute bottom-5 left-6 text-left">
-                      <p className="text-emerald-600 text-[9px] font-bold uppercase tracking-widest mb-1">Sẵn sàng phát</p>
-                      <h3 className="text-lg font-serif font-bold text-stone-900">{songs[currentSongIndex].title}</h3>
-                    </div>
-                  </div>
-                )}
+                  )}
+                </div>
               </div>
             </div>
           </div>
