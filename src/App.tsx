@@ -109,7 +109,7 @@ function LandingPage() {
     }, 5000);
     
     return () => clearTimeout(timer);
-  }, [currentSongIndex, isPlaying]);
+  }, [currentSongIndex]);
 
   useEffect(() => {
     const handleScroll = () => setIsScrolled(window.scrollY > 50);
@@ -696,12 +696,10 @@ function LandingPage() {
                 <div className="flex-1 relative group overflow-hidden bg-stone-100">
                   {songs[currentSongIndex] && (
                     <Player
-                      key={songs[currentSongIndex].id}
                       url={getYoutubeUrl(songs[currentSongIndex].youtube_url)}
                       width="100%"
                       height="100%"
-                      playing={isPlaying}
-                      light={!isPlaying}
+                      playing={isPlaying && isPlayerReady}
                       volume={1}
                       controls={true}
                       onReady={() => {
